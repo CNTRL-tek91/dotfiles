@@ -1,0 +1,21 @@
+{
+    "appearance": {
+        "transparency": {
+            "base": 0.4568225688647746,
+            "enabled": true
+        }
+    },
+    "bar": {
+        "clock": {
+            "background": false
+        }
+    },
+    "dashboard": {
+        "showOnHover": true
+    },
+    "launcher": {
+        "useFuzzy": {
+            "wallpapers": true
+        }
+    }
+}

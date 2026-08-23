@@ -1,0 +1,17 @@
+# wallust config — dynamic wallpaper-based theming for the M-SaaD-H rice
+# palette is overridden per-run by the wrapper (auto dark/light); this is the fallback.
+
+backend = "kmeans"
+color_space = "labmixed"
+palette = "harddark16"
+threshold = 11
+
+[templates]
+# wallust handles ONLY the terminal + neovim (distinct, image-extracted colors,
+# so code/syntax stays readable). matugen (Material You) handles the UI —
+# waybar/hypr/tofi/dunst — see ~/.config/matugen/config.toml.
+kitty.template = 'colors-kitty.conf'
+kitty.target  = '~/.config/kitty/wallust-colors.conf'
+
+nvim.template = 'colors-nvim.lua'
+nvim.target  = '~/.config/nvim/lua/wallust_base16.lua'

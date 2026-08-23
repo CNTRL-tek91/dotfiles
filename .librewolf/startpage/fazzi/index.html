@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>~/new_tab</title>
+    <link rel="icon" type="image/x-icon" href="../src/favicon.ico">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="../src/css/style.css" rel="stylesheet"/>
+  </head>
+
+  <body class="fazzi">
+    <form id="searchbar" action="https://www.google.com/search" method="get" autocomplete="off" role="search">
+      <input id="search-input" type="text" name="q" placeholder="Search the web…" autofocus />
+    </form>
+    <div id="main-row">
+    <div id="image" onclick="nextImage()" oncontextmenu="nextBg(); return false;">
+      <img id="carouselImage" src="../src/images/xeno3.webp" />
+    </div>
+    <div id="text">
+      <div id="greeting"></div>
+      <div id="date"></div>
+      <div id="links">
+        <div class="urls">
+          <div class="header">~/general 󰀻</div>
+          <ul>
+            <li><a href="https://youtube.com/">youtube</a></li>
+            <li><a href="https://twitch.tv/">twitch</a></li>
+            <li><a href="https://music.yandex.ru/">yandex.music</a></li>
+            <li><a href="https://wallhaven.cc/">wallhaven</a></li>
+            <li><a href="https://gmail.com/">gmail</a></li>
+            <li><a href="https://mail.yandex.ru/">yandex.mail</a></li>
+          </ul>
+        </div>
+        <div class="urls">
+          <div class="header">~/dev 󰅩</div>
+          <ul>
+            <li><a href="https://aur.archlinux.org/">aur</a></li>
+            <li>
+              <a href="https://github.com/">github</a>
+            </li>
+            <li><a href="https://github.com/vernette/hyprsnap">dotfiles</a></li>
+            <li><a href="http://localhost">localhost</a></li>
+            <li><a href="https://excalidraw.com/">excalidraw</a></li>
+          </ul>
+        </div>
+        <div class="urls">
+          <div class="header">~/ai 󰭻</div>
+          <ul>
+            <li><a href="https://chat.openai.com/">chatgpt</a></li>
+            <li><a href="https://claude.ai/">claude</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    </div>
+  </body>
+  <script async src="../src/js/greeting.js"></script>
+  <script async src="../src/js/date.js"></script>
+  <script async src="../src/js/theme.js" currentIndex="0"></script>
+</html>

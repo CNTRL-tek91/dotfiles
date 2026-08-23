@@ -1,0 +1,25 @@
+
+[Default Applications]
+inode/directory=thunar.desktop
+application/x-wayland-gnome-saved-search=thunar.desktop
+x-scheme-handler/claude-cli=claude-code-url-handler.desktop
+application/pdf=org.pwmt.zathura.desktop
+image/png=org.gnome.Loupe.desktop
+image/jpeg=org.gnome.Loupe.desktop
+image/gif=org.gnome.Loupe.desktop
+image/webp=org.gnome.Loupe.desktop
+image/bmp=org.gnome.Loupe.desktop
+image/tiff=org.gnome.Loupe.desktop
+image/svg+xml=org.gnome.Loupe.desktop
+video/webm=mpv.desktop
+video/x-msvideo=mpv.desktop
+video/quicktime=mpv.desktop
+video/x-matroska=mpv.desktop
+video/mp4=mpv.desktop
+audio/flac=mpv.desktop
+audio/ogg=mpv.desktop
+audio/opus=mpv.desktop
+audio/x-wav=mpv.desktop
+audio/mpeg=mpv.desktop
+text/markdown=org.xfce.mousepad.desktop
+text/csv=org.xfce.mousepad.desktop

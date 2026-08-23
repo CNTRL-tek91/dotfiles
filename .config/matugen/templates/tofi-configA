@@ -1,0 +1,18 @@
+width = 100%
+height = 100%
+border-width = 0
+outline-width = 0
+padding-left = 33%
+padding-top = 40%
+result-spacing = 10
+num-results = 5
+
+font = JetBrainsMono Nerd Font
+font-size = 14
+
+text-color = {{colors.on_surface.default.hex}}
+
+prompt-text = " : "
+
+background-color = {{colors.surface.default.hex}}d9
+selection-color = {{colors.primary.default.hex}}

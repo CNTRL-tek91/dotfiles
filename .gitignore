@@ -1,0 +1,25 @@
+.config/spicetify/Backup/
+.config/spicetify/Extracted/
+.librewolf/
+
+# --- never commit: browser profiles, tokens, caches ---
+.config/mozilla/
+.config/BraveSoftware/
+.config/Code/
+.config/GitHub Desktop/
+.config/Vencord/
+.config/Equicord/
+.config/equibop/
+.config/BetterDiscord/
+.config/legcord/
+.config/vesktop/
+.config/pulse/
+.config/dconf/
+.config/yay/
+# --- machine-specific / regenerated ---
+.config/rog/
+.config/nwg-displays/
+.config/_predynamic_backup*/
+*.bak
+*.bak.*
+.config/hypr/hosts/host.conf

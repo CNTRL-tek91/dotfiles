@@ -1,0 +1,24 @@
+# Stow's default ignore list (restated — a local file overrides the built-in one)
+RCS
+.+,v
+CVS
+\.\#.+
+\.cvsignore
+\.svn
+_darcs
+\.hg
+\.git
+\.gitignore
+\.gitmodules
+.+~
+\#.*\#
+^/README.*
+^/LICENSE.*
+^/COPYING
+# Reference-only: system manifests are not meant to land in $HOME
+^/system$
+^/\.stow-local-ignore$
+# Rewritten in place by the system — kept in the repo as reference copies only,
+# because a temp-file-and-rename write would silently replace the symlink.
+^/\.config/mimeapps\.list$
+^/\.config/user-dirs\.dirs$

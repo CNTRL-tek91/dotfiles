@@ -1,0 +1,58 @@
+/* SwayOSD theme — pulls live colors from pywal/wallust (the same source Waybar
+   uses). The import path is absolute on purpose: this file is reached through a
+   stow symlink, so a relative import would resolve from the wrong directory. */
+@import url("file:///home/cntrl/.cache/wal/colors-waybar.css");
+
+window#osd {
+  border-radius: 16px;
+  border: 2px solid alpha(@color13, 0.4);
+  background: alpha(@background, 0.9);
+}
+
+window#osd #container {
+  margin: 16px;
+}
+
+/* speaker/brightness icon + any label */
+window#osd image,
+window#osd label {
+  color: @foreground;
+}
+
+window#osd progressbar:disabled,
+window#osd image:disabled {
+  opacity: 0.5;
+}
+
+window#osd progressbar,
+window#osd segmentedprogress {
+  min-height: 8px;
+  border-radius: 999px;
+  background: transparent;
+  border: none;
+}
+
+/* unfilled part of the slider */
+window#osd trough,
+window#osd segment {
+  min-height: inherit;
+  border-radius: inherit;
+  border: none;
+  background: alpha(@foreground, 0.25);
+}
+
+/* filled part of the slider — the pywal accent (same as Waybar's main color) */
+window#osd progress,
+window#osd segment.active {
+  min-height: inherit;
+  border-radius: inherit;
+  border: none;
+  background: @color13;
+}
+
+window#osd segment {
+  margin-left: 8px;
+}
+window#osd segment:first-child {
+  margin-left: 0;
+}

@@ -1,0 +1,42 @@
+#!/bin/bash
+
+THEME_FILE="/tmp/theme_variant"
+wal_arguments=""
+
+if [ -s "$THEME_FILE" ]; then
+  case $(<"$THEME_FILE") in
+    "light") wal_arguments="lighten -l" ;;
+  esac
+fi
+
+wal -i ~/Pictures/wallpaper.png --cols16 $wal_arguments -q -n -e
+
+# Build a readability-floored, wallpaper-themed kitty palette, then live-reload
+# any running kitty instances (new windows pick it up automatically).
+python3 ~/.config/hypr/scripts/kitty_readable_colors.py 2>/dev/null
+# Tell every running kitty to reload its config (picks up the new palette live).
+killall -SIGUSR1 kitty 2>/dev/null
+
+# Reload waybar colors via a STYLE-ONLY reload (reload_style_on_change), which does
+# NOT recreate the layer-shell surface, so XWayland windows (LibreWolf) survive.
+# A real content change is required (a bare `touch` only updates mtime, which waybar
+# may ignore); we keep a single self-replacing marker line at the end of style.css.
+sed -i --follow-symlinks '/^\/\* wal-reload /d' ~/.config/waybar/style.css
+printf '/* wal-reload %s */\n' "$(date +%s%N)" >> ~/.config/waybar/style.css
+
+# Sync the SDDM (boot login screen) background to the current wallpaper.
+# The simple_sddm_2 theme reads Backgrounds/default; that file is user-owned, so
+# we can overwrite it without sudo. Re-encode to PNG (the theme's expected format)
+# and fall back to a raw copy if ImageMagick isn't available. Guarded by -w so it
+# silently skips (never prompts for a password) if the file isn't writable.
+SDDM_BG="/usr/share/sddm/themes/simple_sddm_2/Backgrounds/default"
+WALL_SRC="$(readlink -f ~/Pictures/wallpaper.png)"
+if [ -n "$WALL_SRC" ] && [ -f "$WALL_SRC" ] && [ -w "$SDDM_BG" ]; then
+  magick "$WALL_SRC" "PNG:$SDDM_BG" 2>/dev/null || cp -f "$WALL_SRC" "$SDDM_BG"
+fi
+
+# Push the new pywal colors into LibreWolf/Firefox via the pywalfox extension.
+command -v pywalfox >/dev/null && pywalfox update >/dev/null 2>&1
+# Optional integrations (only run if installed).
+command -v walogram  >/dev/null && walogram -s >/dev/null 2>&1
+command -v spicetify >/dev/null && spicetify apply -q -n >/dev/null 2>&1

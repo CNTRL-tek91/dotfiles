@@ -1,0 +1,52 @@
+/* Centered horizontal wallpaper-thumbnail carousel */
+* {
+    font: "JetBrainsMono Nerd Font 11";
+    background-color: transparent;
+    text-color: #eee0d4;
+}
+
+window {
+    location: center;
+    anchor:   center;
+    width:    85%;
+    background-color: rgba(18, 18, 24, 0.90);
+    border-radius: 20px;
+    padding: 28px;
+}
+
+mainbox {
+    children: [ "inputbar", "listview" ];
+    spacing: 22px;
+}
+
+inputbar {
+    children: [ "prompt", "entry" ];
+    padding: 10px 14px;
+    spacing: 10px;
+    background-color: rgba(255, 255, 255, 0.06);
+    border-radius: 12px;
+}
+prompt { text-color: #ffbb00; }
+entry  { placeholder: "Search wallpaper…"; }
+
+listview {
+    lines:     1;       /* single row -> horizontal carousel */
+    columns:   5;       /* visible at once; scroll for more */
+    spacing:   18px;
+    scrollbar: false;
+    fixed-height: true;
+}
+
+element {
+    orientation: vertical;
+    padding: 8px;
+    border-radius: 16px;
+}
+element-icon { size: 210px; }
+element-text { enabled: false; }   /* show only the thumbnail */
+
+element selected {
+    background-color: rgba(255, 187, 0, 0.28);
+    border: 3px;
+    border-color: #ffbb00;
+}
