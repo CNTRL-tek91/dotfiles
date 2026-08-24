@@ -1,51 +1,47 @@
 #!/usr/bin/env bash
-# Regenerate the package manifests and commit them if they changed.
+# Record THIS machine's installed packages into system/hosts/<hostname>-*.txt
+# and commit if they changed.
 #
-# Run by the systemd user timer `dotfiles-manifest.timer`. Deliberately does
-# NOT install anything: it only records what this machine has, so the other
-# machine can see the difference on its next `git pull`.
+# Run by the systemd user timer `dotfiles-manifest.timer`.
 #
-# Only ever stages the two manifest files, so unrelated work in progress is
-# never swept into a commit.
+# Writes PER-HOST files on purpose. The shared system/pkglist-*.txt is the
+# curated reference install list; if every machine wrote to it they would
+# overwrite each other forever (Laptop 2 erasing asusctl, Laptop 1 erasing
+# intel-ucode, ad infinitum).
+#
+# Installs nothing. It records state so the other machine can see the
+# difference and you can decide.
 set -uo pipefail
 
 REPO="${DOTFILES_REPO:-$HOME/.dotfiles}"
+HOST="$(uname -n)"
 cd "$REPO" || { echo "no repo at $REPO"; exit 1; }
 
-NATIVE="system/pkglist-native.txt"
-AUR="system/pkglist-aur.txt"
+mkdir -p system/hosts
+NATIVE="system/hosts/${HOST}-native.txt"
+AUR="system/hosts/${HOST}-aur.txt"
 
 pacman -Qqen | LC_ALL=C sort > "$NATIVE.tmp"
 pacman -Qqem | LC_ALL=C sort > "$AUR.tmp"
 
 changed=0
 for f in "$NATIVE" "$AUR"; do
-  if ! cmp -s "$f.tmp" "$f"; then mv "$f.tmp" "$f"; changed=1; else rm -f "$f.tmp"; fi
+  if ! cmp -s "$f.tmp" "$f" 2>/dev/null; then mv "$f.tmp" "$f"; changed=1; else rm -f "$f.tmp"; fi
 done
 
-if [ "$changed" -eq 0 ]; then
-  echo "manifests unchanged"
-  exit 0
-fi
+[ "$changed" -eq 0 ] && { echo "no package changes on $HOST"; exit 0; }
 
-echo "manifests changed on $(uname -n):"
-git --no-pager diff --stat -- "$NATIVE" "$AUR"
+echo "package changes on $HOST:"
+git --no-pager diff --stat -- "$NATIVE" "$AUR" 2>/dev/null || echo "  (first run)"
 
 git add -- "$NATIVE" "$AUR"
-git commit -q -m "Update package manifests from $(uname -n)
+git commit -q -m "Package snapshot: $HOST
 
-Automated: $(pacman -Qqen | wc -l) native, $(pacman -Qqem | wc -l) AUR." || exit 0
+$(wc -l < "$NATIVE") native, $(wc -l < "$AUR") AUR. Automated." || exit 0
 
-# Rebase onto the remote before pushing so the two machines cannot diverge.
-# --autostash keeps any unrelated work in progress out of the way.
 if ! git pull --rebase --autostash -q origin main; then
-  echo "rebase failed - leaving the commit local, resolve by hand"
+  echo "rebase failed - commit left local, resolve by hand"
   git rebase --abort 2>/dev/null
   exit 1
 fi
-
-if git push -q origin main; then
-  echo "pushed"
-else
-  echo "push failed (offline?) - commit is local, will go out next run"
-fi
+git push -q origin main && echo "pushed" || echo "push failed (offline?) - will retry next run"

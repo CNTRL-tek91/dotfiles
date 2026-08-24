@@ -102,9 +102,14 @@ Three layers, three mechanisms. They are deliberately separate:
 
 ### Package manifests
 
-`system/sync-manifests.sh` regenerates `pkglist-native.txt` and `pkglist-aur.txt`,
-and commits + pushes only if they changed. It installs nothing — it records what
-a machine has so the other can see the difference. Enable on each machine:
+`system/sync-manifests.sh` records **this machine's** packages into
+`system/hosts/<hostname>-{native,aur}.txt` and commits if they changed.
+
+Per-host files are deliberate. The shared `system/pkglist-*.txt` is the curated
+reference install list — if every machine wrote to it, they would overwrite each
+other forever (Laptop 2 erasing `asusctl`, Laptop 1 erasing `intel-ucode`).
+
+Enable on each machine:
 
 ```sh
 mkdir -p ~/.config/systemd/user
@@ -113,17 +118,15 @@ systemctl --user daemon-reload
 systemctl --user enable --now dotfiles-manifest.timer
 ```
 
-To apply what the *other* machine installed:
+To see what the *other* machine has that this one does not:
 
 ```sh
 git -C ~/.dotfiles pull
-comm -13 <(pacman -Qqen | sort) <(sort ~/.dotfiles/system/pkglist-native.txt)   # missing here
-comm -13 <(pacman -Qqem | sort) <(sort ~/.dotfiles/system/pkglist-aur.txt)
+~/.dotfiles/system/compare-hosts.sh
 ```
 
-Review that list before installing — the two machines legitimately differ
-(`asusctl`/`supergfxctl`/`rog-control-center` on Laptop 1, `intel-ucode` vs
-`amd-ucode`), so the diff is never meant to reach zero.
+It prints the `pacman`/`paru` commands but runs nothing. The diff is never meant
+to reach zero — the machines legitimately differ by chassis and CPU vendor.
 
 ### Syncthing
 
