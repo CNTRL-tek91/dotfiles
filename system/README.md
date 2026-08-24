@@ -138,3 +138,29 @@ the same file on both while disconnected leaves a `*.sync-conflict-*` copy.
 anything with a live SQLite database — concurrent writes corrupt them.
 `~/Pictures/wallpapers` is a symlink into this repo and is excluded via
 `.stignore` so the two tools cannot fight over the same files.
+
+### Syncthing device pairing (already configured)
+
+| Machine | Device ID |
+|---|---|
+| `archlinux` (Laptop 1) | `M7CEQTS-33JFF5S-OVZERHX-GGUFZ67-TBEQTF5-WWSIPD3-MEMAG6N-TGTOSQZ` |
+| `arch-cntrl` (Laptop 2) | `EQQYIYF-LWNS4BK-ZXDUVOO-JU5UHSY-UCAYBMP-F5QVAKI-TO6XHBI-K554QQ2` |
+
+Shared folders, all `sendreceive` with filesystem watching:
+`~/Projects`, `~/Documents`, `~/Desktop`, `~/Pictures`.
+
+`~/Pictures/.stignore` excludes `wallpapers` and `wallpaper.png` — the first is
+a symlink into this repo, so git owns it, and letting Syncthing manage the same
+files would have the two tools fighting.
+
+Web UI on either machine: <http://127.0.0.1:8384>
+
+Adding a third machine: install `syncthing`, `systemctl --user enable --now
+syncthing`, then add its device ID on an existing machine and share the folders
+to it.
+
+**Limits worth remembering.** Both machines must be powered on at the same time —
+it is peer-to-peer, nothing holds the data in between. It syncs, it does not
+merge: editing one file on both while disconnected leaves a `*.sync-conflict-*`
+copy alongside the original. Never add `~/.config`, `~/.cache`, browser profiles
+or anything with a live SQLite database.
