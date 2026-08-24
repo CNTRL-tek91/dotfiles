@@ -1,0 +1,11 @@
+[Unit]
+Description=Daily package-manifest sync
+
+[Timer]
+OnCalendar=daily
+# Machines are rarely up at the same instant; catch up after a boot instead
+Persistent=true
+RandomizedDelaySec=30m
+
+[Install]
+WantedBy=timers.target

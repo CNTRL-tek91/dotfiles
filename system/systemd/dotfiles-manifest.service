@@ -1,0 +1,11 @@
+[Unit]
+Description=Record installed packages into the dotfiles repo
+Documentation=file:%h/.dotfiles/SETUP.md
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=%h/.dotfiles/system/sync-manifests.sh
+# Never block shutdown or spin if git hangs on a credential prompt
+TimeoutStartSec=120
+Environment=GIT_TERMINAL_PROMPT=0

@@ -89,3 +89,49 @@ what is in the manifest — that is how `starship` and `hyprpicker` were caught.
 These are invoked by configs or aliases but installed on neither laptop. They
 are pre-existing and harmless; the aliases simply fail if used:
 `spicetify`, `swww`, `docker`, `wg-quick`, `awg-quick`, `traceroute`, `rustmon`.
+
+## Keeping the two machines in sync
+
+Three layers, three mechanisms. They are deliberately separate:
+
+| Layer | Mechanism | Automatic? |
+|---|---|---|
+| Config (this repo) | git | **No** — you commit when a change is good |
+| Working files (`~/Projects`, `~/Documents`, …) | Syncthing | Yes, continuous |
+| Installed packages | `sync-manifests.sh` + systemd timer | Records daily; **installing is still manual** |
+
+### Package manifests
+
+`system/sync-manifests.sh` regenerates `pkglist-native.txt` and `pkglist-aur.txt`,
+and commits + pushes only if they changed. It installs nothing — it records what
+a machine has so the other can see the difference. Enable on each machine:
+
+```sh
+mkdir -p ~/.config/systemd/user
+cp ~/.dotfiles/system/systemd/dotfiles-manifest.{service,timer} ~/.config/systemd/user/
+systemctl --user daemon-reload
+systemctl --user enable --now dotfiles-manifest.timer
+```
+
+To apply what the *other* machine installed:
+
+```sh
+git -C ~/.dotfiles pull
+comm -13 <(pacman -Qqen | sort) <(sort ~/.dotfiles/system/pkglist-native.txt)   # missing here
+comm -13 <(pacman -Qqem | sort) <(sort ~/.dotfiles/system/pkglist-aur.txt)
+```
+
+Review that list before installing — the two machines legitimately differ
+(`asusctl`/`supergfxctl`/`rog-control-center` on Laptop 1, `intel-ucode` vs
+`amd-ucode`), so the diff is never meant to reach zero.
+
+### Syncthing
+
+Peer-to-peer, no cloud. Both machines must be **on at the same time** for changes
+to move; nothing stores them in between. It syncs, it does not merge — editing
+the same file on both while disconnected leaves a `*.sync-conflict-*` copy.
+
+**Never sync** `~/.config` (git owns it), `~/.cache`, browser profiles, or
+anything with a live SQLite database — concurrent writes corrupt them.
+`~/Pictures/wallpapers` is a symlink into this repo and is excluded via
+`.stignore` so the two tools cannot fight over the same files.
