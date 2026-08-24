@@ -1,5 +1,9 @@
 # dotfiles
 
+> **New machine?** Read [SETUP.md](SETUP.md) first — a full inventory of what
+> this desktop runs, how the theming pipeline fits together, and the known traps
+> that will otherwise cost you hours.
+
 Hyprland desktop on Arch Linux. Wayland throughout, themed dynamically from the
 current wallpaper via [wallust](https://codeberg.org/explosion-mental/wallust)
 and pywal, so every application's palette follows whatever is on screen.
