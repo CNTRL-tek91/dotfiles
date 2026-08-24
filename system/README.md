@@ -59,3 +59,33 @@ Two different mechanisms set the GTK theme to two different values:
 `hypr/configs/autostart.conf` runs `gsettings set ... gtk-theme 'adw-gtk3-dark'`.
 `adw-gtk3` is not currently installed on Laptop 1 at all, so that gsettings call
 sets a theme that does not exist. Worth resolving to one or the other.
+
+## Why `pacman -Qqe` is not a complete manifest
+
+Three defects surfaced while building Laptop 2 from these lists. All three
+share a root cause: `pacman -Qqe` records what was *explicitly requested*, not
+what the configs actually need.
+
+| Package | Problem | Fix |
+|---|---|---|
+| `starship` | Prompt is invoked by `.zshrc` on every shell, but it arrived on Laptop 1 as a **dependency**, so it never appeared in `-Qqe` | added to `pkglist-native.txt` |
+| `hyprpicker` | Bound in the Hyprland config; also dependency-only on Laptop 1 | added to `pkglist-native.txt` |
+| `librewolf-bin` | **Removed from the AUR** — LibreWolf now ships in the official `extra` repo. One dead target aborts the whole `paru` transaction, so nothing installs | dropped from `pkglist-aur.txt`; `librewolf` added to `pkglist-native.txt` |
+
+Before trusting these lists on a new machine, validate every AUR target still
+exists — one missing package aborts the entire transaction:
+
+```sh
+for p in $(cat system/pkglist-aur.txt); do
+  paru -Si "$p" >/dev/null 2>&1 || echo "GONE: $p"
+done
+```
+
+And check that everything your configs invoke is actually installed, not just
+what is in the manifest — that is how `starship` and `hyprpicker` were caught.
+
+## Dead references (missing on BOTH machines)
+
+These are invoked by configs or aliases but installed on neither laptop. They
+are pre-existing and harmless; the aliases simply fail if used:
+`spicetify`, `swww`, `docker`, `wg-quick`, `awg-quick`, `traceroute`, `rustmon`.

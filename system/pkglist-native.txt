@@ -36,6 +36,7 @@ gvfs-mtp
 hypridle
 hyprland
 hyprlock
+hyprpicker
 hyprpolkitagent
 hyprshot
 imagemagick
@@ -45,6 +46,7 @@ kitty
 kvantum
 lf
 libpulse
+librewolf
 libspng
 libva-nvidia-driver
 linux
@@ -102,6 +104,7 @@ rofi
 sddm
 slurp
 sof-firmware
+starship
 stow
 sudo
 swappy

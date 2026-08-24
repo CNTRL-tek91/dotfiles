@@ -6,7 +6,6 @@ github-desktop-bin
 grimblast-git
 gtk-engine-murrine
 libcava
-librewolf-bin
 paru
 paru-debug
 pistol-bin
