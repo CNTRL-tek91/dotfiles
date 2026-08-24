@@ -7,7 +7,6 @@ grimblast-git
 gtk-engine-murrine
 libcava
 paru
-paru-debug
 pistol-bin
 python-pywal16
 python-pywalfox

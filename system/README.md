@@ -32,9 +32,17 @@ come up with default GTK theming, wrong icons and the wrong cursor.
 | Icon theme — `gtk-3.0/settings.ini` wants `Flat-Remix-Blue-Light` | `paru -S flat-remix` |
 | Cursor — `Bibata-Modern-Ice`, set via nwg-look and `~/.icons/default` | `paru -S bibata-cursor-theme-bin` |
 | `adw-gtk3-dark`, set by `hypr/configs/autostart.conf` | `pacman -S adw-gtk-theme` |
+| Pywalfox browser extension (native host is packaged; the LibreWolf-side add-on is not) | Install the signed build from `addons.mozilla.org/firefox/addon/pywalfox/` via `about:addons` → gear → Install Add-on From File |
 
 On Laptop 1 these live in `~/.themes` (5.6 MB) and `~/.icons` (664 MB). They are
 deliberately **not** committed — the packages above provide the same files.
+
+Confirmed missing on first boot of Laptop 2: both the cursor symlink and the
+Pywalfox extension. `python-pywalfox` (native host) installs from the package
+list and registers its native-messaging manifest fine, but that's only half
+the pipe — without the browser extension, `apply_wal_theme.sh`'s `pywalfox
+update` call runs and exits 0 with nothing listening on the other end, so
+LibreWolf silently never gets themed. No error, so this is easy to miss.
 
 ### SDDM login theme
 
@@ -58,7 +66,13 @@ Two different mechanisms set the GTK theme to two different values:
 `gtk-3.0/settings.ini` says `Flat-Remix-GTK-Blue-Dark`, while
 `hypr/configs/autostart.conf` runs `gsettings set ... gtk-theme 'adw-gtk3-dark'`.
 `adw-gtk3` is not currently installed on Laptop 1 at all, so that gsettings call
-sets a theme that does not exist. Worth resolving to one or the other.
+sets a theme that does not exist and silently no-ops there. Worth resolving to
+one or the other.
+
+On Laptop 2, `adw-gtk-theme` **is** installed (it's in `system/README.md`'s
+own hand-install table above), so the same gsettings call actually succeeds —
+`adw-gtk3-dark` wins and overrides the `settings.ini` value for real. Same
+inconsistency, but it now has a visible effect instead of silently failing.
 
 ## Why `pacman -Qqe` is not a complete manifest
 
@@ -71,6 +85,7 @@ what the configs actually need.
 | `starship` | Prompt is invoked by `.zshrc` on every shell, but it arrived on Laptop 1 as a **dependency**, so it never appeared in `-Qqe` | added to `pkglist-native.txt` |
 | `hyprpicker` | Bound in the Hyprland config; also dependency-only on Laptop 1 | added to `pkglist-native.txt` |
 | `librewolf-bin` | **Removed from the AUR** — LibreWolf now ships in the official `extra` repo. One dead target aborts the whole `paru` transaction, so nothing installs | dropped from `pkglist-aur.txt`; `librewolf` added to `pkglist-native.txt` |
+| `paru-debug` | **Removed from the AUR** sometime after Laptop 2 was set up (it had already installed fine by then, so no local symptom — but a fresh `paru -S --needed - < pkglist-aur.txt` on a future machine would abort on it) | dropped from `pkglist-aur.txt` |
 
 Before trusting these lists on a new machine, validate every AUR target still
 exists — one missing package aborts the entire transaction:
