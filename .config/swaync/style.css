@@ -1,4 +1,4 @@
-@import "../../.cache/wal/colors-waybar.css";
+@import "/home/cntrl/.cache/wal/colors-waybar.css";
 
 @define-color main-color @color13;
 @define-color cc-bg alpha(@main-color, 0.2);
