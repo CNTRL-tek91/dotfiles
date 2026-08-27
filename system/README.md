@@ -20,6 +20,28 @@ applied automatically — review each file before using it on a new machine.
 `nvidia-open-dkms` requires Turing (RTX 20 / GTX 16) or newer. Use `nvidia-dkms`
 on Pascal and older.
 
+## `auto-cpufreq` masks `power-profiles-daemon`
+
+Installed and running as a systemd daemon on Laptop 2 (`sudo auto-cpufreq
+--install`), trying an alternative to the Lenovo WMI power-profile path after
+that turned out to change nothing measurable (see `SETUP.md`'s M1/M2 trap
+entry). `--install` auto-detects and masks `power-profiles-daemon`, which
+means `Ctrl+Super+P` and `Super+F6` (both call `powerprofilesctl`) currently
+do nothing on Laptop 2 - not broken, just superseded while this is running.
+
+To revert to `power-profiles-daemon` and get those binds working again:
+
+```sh
+sudo auto-cpufreq --remove
+sudo systemctl unmask power-profiles-daemon.service
+sudo systemctl enable --now power-profiles-daemon.service
+```
+
+Don't install `auto-cpufreq`'s daemon on Laptop 1 without checking first - it
+would mask `power-profiles-daemon` there too, which Laptop 1's own `Super+F6`
+(`asusctl profile next`) doesn't depend on, but worth confirming nothing else
+on that machine reads `power-profiles-daemon` before enabling it.
+
 ## Not covered by the package lists
 
 These are referenced by the configs but were installed by hand on Laptop 1, so

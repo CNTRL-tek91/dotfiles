@@ -1,4 +1,5 @@
 asusctl
+auto-cpufreq
 brave-bin
 caelestia-cli
 caelestia-shell
