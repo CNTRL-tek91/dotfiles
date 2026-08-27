@@ -13,7 +13,7 @@ label_for() {
     quiet)       echo "󰢝  Silent" ;;
     balanced)    echo "󰗑  Balanced" ;;
     performance) echo "󰓅  Performance" ;;
-    low-power)   echo "󰌪  Power Saver" ;;
+    low-power)   echo "󰌪  Silent" ;;
     *)           echo "  ${1^}" ;;
   esac
 }
