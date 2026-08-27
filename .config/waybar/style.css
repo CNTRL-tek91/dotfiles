@@ -56,7 +56,8 @@ window#waybar {
 #custom-github,
 #custom-vscode,
 #custom-neovim,
-#custom-steam {
+#custom-steam,
+#custom-discord {
   padding: 0px 10px;
   margin: 0px;
   background: transparent;

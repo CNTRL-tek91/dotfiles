@@ -29,10 +29,15 @@
     "tooltip": false,
     "on-click": "steam",
   },
+  "custom/discord": {
+    "format": "󰙯",
+    "tooltip": false,
+    "on-click": "discord",
+  },
   "group/launchers": {
     // App launchers + workspace switcher share one centered, dark-grey pill.
     "orientation": "inherit",
-    "modules": ["custom/librewolf", "custom/thunar", "custom/github", "custom/vscode", "custom/neovim", "custom/steam", "hyprland/workspaces"],
+    "modules": ["custom/librewolf", "custom/thunar", "custom/github", "custom/vscode", "custom/neovim", "custom/steam", "custom/discord", "hyprland/workspaces"],
   },
   "hyprland/window": {
     "format": "󰣆 {title}",
@@ -104,7 +109,7 @@
       "7": "",
       "8": "󰕧",
       "9": "",
-      "10": "󰙯",
+      "10": "󰿭",
     },
   },
   "group/control-center": {
