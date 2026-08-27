@@ -1,0 +1,51 @@
+/* Small centered vertical picker, same palette as wallpaper.rasi */
+* {
+    font: "JetBrainsMono Nerd Font 13";
+    background-color: transparent;
+    text-color: #eee0d4;
+}
+
+window {
+    location: center;
+    anchor:   center;
+    width:    260px;
+    background-color: rgba(18, 18, 24, 0.90);
+    border-radius: 20px;
+    padding: 22px;
+}
+
+mainbox {
+    children: [ "inputbar", "listview" ];
+    spacing: 16px;
+}
+
+inputbar {
+    children: [ "prompt", "entry" ];
+    padding: 10px 14px;
+    spacing: 10px;
+    background-color: rgba(255, 255, 255, 0.06);
+    border-radius: 12px;
+}
+prompt { text-color: #ffbb00; }
+entry  { placeholder: "Power mode…"; }
+
+listview {
+    lines:     3;
+    columns:   1;
+    spacing:   8px;
+    scrollbar: false;
+    fixed-height: false;
+}
+
+element {
+    orientation: horizontal;
+    padding: 10px 14px;
+    border-radius: 12px;
+}
+element-text { vertical-align: 0.5; }
+
+element selected {
+    background-color: rgba(255, 187, 0, 0.28);
+    border: 3px;
+    border-color: #ffbb00;
+}

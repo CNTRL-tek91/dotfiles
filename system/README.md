@@ -42,6 +42,27 @@ would mask `power-profiles-daemon` there too, which Laptop 1's own `Super+F6`
 (`asusctl profile next`) doesn't depend on, but worth confirming nothing else
 on that machine reads `power-profiles-daemon` before enabling it.
 
+`Super+F6` and `Ctrl+Super+P` now drive `auto-cpufreq --force` instead (via
+`scripts/cpufreq_cycle.sh` / `scripts/cpufreq_picker.sh`, state tracked in
+`~/.cache/auto-cpufreq-mode`), cycling Silent/Balanced/Performance the same
+way the old `powerprofilesctl` binds did. Unlike `powerprofilesctl`,
+`auto-cpufreq --force` has no unprivileged/polkit path - it hard-requires
+root. That needs a one-time, machine-local sudoers rule (**not** in this
+repo, since sudoers files must be root-owned and 0440 - `stow` can't manage
+it) scoped to exactly the three commands these scripts call:
+
+```sh
+cat <<'EOF' > /tmp/auto-cpufreq-force-sudoers
+cntrl ALL=(root) NOPASSWD: /usr/bin/auto-cpufreq --force powersave, /usr/bin/auto-cpufreq --force performance, /usr/bin/auto-cpufreq --force reset
+EOF
+sudo visudo -cf /tmp/auto-cpufreq-force-sudoers && \
+sudo install -m 0440 /tmp/auto-cpufreq-force-sudoers /etc/sudoers.d/auto-cpufreq-force
+rm /tmp/auto-cpufreq-force-sudoers
+```
+
+Validate with `visudo -cf` on a temp file before it ever touches
+`/etc/sudoers.d/` - a bad sudoers file can lock out `sudo` entirely.
+
 ## Not covered by the package lists
 
 These are referenced by the configs but were installed by hand on Laptop 1, so
@@ -65,6 +86,21 @@ list and registers its native-messaging manifest fine, but that's only half
 the pipe — without the browser extension, `apply_wal_theme.sh`'s `pywalfox
 update` call runs and exits 0 with nothing listening on the other end, so
 LibreWolf silently never gets themed. No error, so this is easy to miss.
+
+### LibreWolf's Google search engine needs a policy, not just a pref
+
+`.librewolf/librewolf.overrides.cfg` sets `defaultPref("browser.search.
+defaultenginename", "Google")`, with a comment saying "Also edit your
+policies.json" - but that policy addition was never actually made, on either
+machine. The pref alone does nothing if "Google" isn't a search engine
+LibreWolf actually knows about (it ships with DuckDuckGo and friends, not
+Google, by design). Fixed by adding a real `SearchEngines` entry to
+`/usr/lib/librewolf/distribution/policies.json` (name, URL template, icon,
+suggestions URL, plus `"Default": "Google"`) - same root-owned,
+package-managed file the `ExtensionSettings`/`FirefoxHome` policies already
+live in, so it doesn't survive a `librewolf` package update and needs
+reapplying after one. Takes effect on LibreWolf's next launch (policies only
+load at startup, like the override file).
 
 ### SDDM login theme
 
