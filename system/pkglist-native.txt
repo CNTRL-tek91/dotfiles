@@ -12,10 +12,12 @@ bluez-utils
 brightnessctl
 btop
 cava
+ckb-next
 cliphist
 cmatrix
 cups
 cups-pk-helper
+discord
 dosfstools
 dunst
 efibootmgr
@@ -73,6 +75,7 @@ nvidia-settings
 nvtop
 nwg-displays
 nwg-look
+openrgb
 os-prober
 otf-font-awesome
 pacman-contrib
@@ -105,6 +108,7 @@ sddm
 slurp
 sof-firmware
 starship
+steam
 stow
 sudo
 swappy

@@ -11,6 +11,26 @@ applied automatically — review each file before using it on a new machine.
 | `nvidia.conf`, `nvidia-power.conf` | copy to `/etc/modprobe.d/`, then `mkinitcpio -P` |
 | `services.txt` / `services-user.txt` | reference lists, enable by hand |
 
+## Steam needs `multilib` enabled first
+
+`steam` is in `pkglist-native.txt`, but a fresh Arch install doesn't have the
+`multilib` repo enabled (32-bit packages Steam depends on live there) - it's
+commented out in `/etc/pacman.conf` by default. Uncomment the `[multilib]`
+block and its `Include` line, then `pacman -Syu` before installing, or the
+`pacman -S --needed -` restore for `pkglist-native.txt` will fail on `steam`
+specifically.
+
+## `linux-wallpaperengine` needs Wallpaper Engine's Steam Workshop content
+
+`scripts/wallpaperengine-rofi.sh` (`Super+Shift+V`, Laptop 2 only) reads
+already-downloaded Workshop items directly from
+`~/.local/share/Steam/steamapps/workshop/content/431960/` - it does nothing
+useful without Wallpaper Engine (Steam App ID 431960) actually owned and
+its Workshop items downloaded first. The Wallpaper Engine *Steam app itself*
+can't paint a Wayland desktop even under Proton (it only knows how to hook
+into Windows' compositor) - `linux-wallpaperengine` is what actually renders
+the background, via `wlr-layer-shell`, independent of the Steam app.
+
 ## Exclude on non-ROG hardware
 
 `asusctl`, `supergfxctl`, `rog-control-center` are ASUS ROG only.

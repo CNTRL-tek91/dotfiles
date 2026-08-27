@@ -7,6 +7,7 @@ github-desktop-bin
 grimblast-git
 gtk-engine-murrine
 libcava
+linux-wallpaperengine-git
 paru
 pistol-bin
 python-pywal16

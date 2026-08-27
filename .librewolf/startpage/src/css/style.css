@@ -17,10 +17,11 @@ html {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 100svh;
+  min-height: 100svh;
   background-color: var(--background-color);
   background-image: url("../bgs/topography.svg");
   overflow-x: clip;
+  overflow-y: auto;
 }
 
 html.loaded {
@@ -110,6 +111,52 @@ body {
     display: none;
     margin: 0;
     padding: 0;
+  }
+}
+
+/* Compact layout for small/tiled windows - shrinks spacing so everything
+   fits without needing to scroll, instead of the fixed sizes below simply
+   overflowing a short viewport (the search bar getting pushed off the top
+   was exactly this: a quarter-tile window is short as well as narrow). */
+@media (max-height: 700px) {
+  #searchbar {
+    margin-bottom: 1.2em;
+  }
+
+  #greeting {
+    font-size: 1.6em;
+    margin-bottom: 0.2em;
+  }
+
+  #date {
+    font-size: 1em;
+    margin: 0.4em 0;
+  }
+
+  .header {
+    font-size: 1.2em;
+  }
+
+  a {
+    font-size: 1em;
+  }
+
+  #carouselImage {
+    height: 320px;
+  }
+}
+
+@media (max-height: 500px) {
+  #searchbar {
+    margin-bottom: 0.6em;
+  }
+
+  #greeting {
+    font-size: 1.2em;
+  }
+
+  #links {
+    grid-row-gap: 0.15em;
   }
 }
 
