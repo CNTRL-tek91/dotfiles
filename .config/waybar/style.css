@@ -55,7 +55,8 @@ window#waybar {
 #custom-thunar,
 #custom-github,
 #custom-vscode,
-#custom-neovim {
+#custom-neovim,
+#custom-steam {
   padding: 0px 10px;
   margin: 0px;
   background: transparent;

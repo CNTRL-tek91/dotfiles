@@ -24,10 +24,15 @@
     "tooltip": false,
     "on-click": "kitty nvim",
   },
+  "custom/steam": {
+    "format": "󰓓",
+    "tooltip": false,
+    "on-click": "steam",
+  },
   "group/launchers": {
     // App launchers + workspace switcher share one centered, dark-grey pill.
     "orientation": "inherit",
-    "modules": ["custom/librewolf", "custom/thunar", "custom/github", "custom/vscode", "custom/neovim", "hyprland/workspaces"],
+    "modules": ["custom/librewolf", "custom/thunar", "custom/github", "custom/vscode", "custom/neovim", "custom/steam", "hyprland/workspaces"],
   },
   "hyprland/window": {
     "format": "󰣆 {title}",
