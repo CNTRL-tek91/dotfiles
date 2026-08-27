@@ -27,6 +27,9 @@ chosen=$(emit | rofi -dmenu -i -p "Live Wallpaper" -theme "$HOME/.config/rofi/wa
 [ -z "$chosen" ] && exit 0
 
 pkill -f 'linux-wallpaperengine' 2>/dev/null
-nohup linux-wallpaperengine --screen-root eDP-1 --bg "$chosen" \
+# --layer background: without it, linux-wallpaperengine defaults to the
+# "bottom" layer - the same level waybar renders on - and since it's a
+# full-screen surface added after waybar, it covers the bar entirely.
+nohup linux-wallpaperengine --layer background --screen-root eDP-1 --bg "$chosen" \
   > "$HOME/.cache/wallpaperengine.log" 2>&1 &
 disown
