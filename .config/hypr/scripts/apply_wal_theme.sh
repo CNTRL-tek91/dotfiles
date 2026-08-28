@@ -1,4 +1,11 @@
 #!/bin/bash
+# Usage: apply_wal_theme.sh [/path/to/image]
+# Defaults to the actual wallpaper. Callers pass an override when the thing
+# to theme from isn't a static wallpaper on disk - e.g. wallpaperengine-rofi.sh
+# passes a screenshot of a live wallpaper, since there's no single static
+# image a live scene to read otherwise.
+
+WALL_IMG="${1:-$HOME/Pictures/wallpaper.png}"
 
 THEME_FILE="/tmp/theme_variant"
 wal_arguments=""
@@ -9,7 +16,7 @@ if [ -s "$THEME_FILE" ]; then
   esac
 fi
 
-wal -i ~/Pictures/wallpaper.png --cols16 $wal_arguments -q -n -e
+wal -i "$WALL_IMG" --cols16 $wal_arguments -q -n -e
 
 # Build a readability-floored, wallpaper-themed kitty palette, then live-reload
 # any running kitty instances (new windows pick it up automatically).

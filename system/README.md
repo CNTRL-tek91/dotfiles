@@ -32,14 +32,26 @@ into Windows' compositor) - `linux-wallpaperengine` is what actually renders
 the background, via `wlr-layer-shell`, independent of the Steam app.
 
 Also re-themes the desktop to match, same as picking a static wallpaper
-does. A live scene has no single static image the wal/matugen/wallust
-pipeline can read, so `linux-wallpaperengine`'s own `--screenshot` flag
-(documented by the project as built "for use with tools like PyWAL") grabs
-an actual rendered frame, which `scripts/wallpaperengine_retheme.sh` feeds
-through the same matugen/wallust pipeline as `scripts/wallpaper.sh` - minus
-the parts specific to setting a static wallpaper, since the live scene
-itself stays the visible one. `Ctrl+Super+V` (stop) reverts the theme back
-by re-running the normal static pipeline on `~/Pictures/wallpaper.png`.
+does. A live scene has no single static image the theming pipeline can
+read, so `linux-wallpaperengine`'s own `--screenshot` flag (documented by
+the project as built "for use with tools like PyWAL") grabs an actual
+rendered frame, which `scripts/wallpaperengine_retheme.sh` hands to
+`scripts/apply_wal_theme.sh <image>` - the actual live pipeline everything
+(kitty, waybar, LibreWolf via pywalfox) reads from (`wal`/pywal, writing
+`~/.cache/wal/*`), now accepting an optional image-path override instead of
+always using `~/Pictures/wallpaper.png`. `Ctrl+Super+V` (stop) reverts by
+calling it again with no override.
+
+`scripts/wallpaper.sh` (matugen + wallust, targeting `.config/*/wallust/*`)
+looks like a parallel theming pipeline but isn't wired to anything actually
+bound to a key - nothing reads its output. Confirmed by checking what
+kitty.conf and waybar/style.css actually `include`/`@import`: both point at
+`~/.cache/wal/*`, not the matugen/wallust files. Cost real debugging time
+the first time through this feature (looked like it worked - the matugen/
+wallust files updated with correct extracted values - until checking the
+actually-rendered colors, which hadn't moved at all). If the matugen/
+wallust half is meant to replace `wal` rather than sit unused beside it,
+that's unfinished migration work, not documented anywhere else.
 
 `--silent` alone doesn't fully mute a wallpaper's audio - PipeWire still
 showed an unmuted, 100%-volume stream for the process despite the flag.
