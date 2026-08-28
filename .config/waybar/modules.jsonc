@@ -261,7 +261,7 @@
   "custom/rgb": {
     "format": "󰟖",
     "tooltip": false,
-    "on-click": "ckb-next",
+    "on-click": "openrgb",
   },
   "custom/wallpaperengine": {
     "format": "󰸉",

@@ -68,6 +68,22 @@ starts).
 `nvidia-open-dkms` requires Turing (RTX 20 / GTX 16) or newer. Use `nvidia-dkms`
 on Pascal and older.
 
+## `ckb-next` can't control Laptop 2's keyboard RGB - `openrgb` does
+
+Laptop 2's built-in keyboard enumerates over USB as `048d:c935 Corsair
+Gaming K95 RGB PLATINUM Keyboard` (`lsusb`) - vendor `048d` is **ITE**, not
+Corsair's real vendor ID (`1b1c`). It's the laptop's own keyboard, built on
+an ITE controller, carrying Corsair naming/branding from a Lenovo-Corsair
+collaboration on this model - not an external Corsair desktop keyboard.
+`ckb-next` only recognizes genuine Corsair-vendor-ID hardware, so it always
+reports "no devices connected" here regardless of the daemon running -
+that's expected, not fixable by config. `openrgb` recognizes it directly
+and by name ("Lenovo Legion Y740"), with a full per-key RGB map including
+the Legion logo, power button, vents, and USB ports. The waybar RGB icon
+launches `openrgb` for this reason. Keep `ckb-next` installed in case a
+real Corsair peripheral gets plugged in later, but the `ckb-next-daemon`
+systemd service currently serves no purpose on this machine.
+
 ## `auto-cpufreq` masks `power-profiles-daemon`
 
 Installed and running as a systemd daemon on Laptop 2 (`sudo auto-cpufreq
