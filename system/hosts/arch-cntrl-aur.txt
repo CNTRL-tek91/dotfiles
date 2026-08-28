@@ -1,3 +1,4 @@
+auto-cpufreq
 bibata-cursor-theme-bin
 brave-bin
 caelestia-cli
@@ -7,6 +8,7 @@ flat-remix-gtk
 github-desktop-bin
 grimblast-git
 gtk-engine-murrine
+linux-wallpaperengine-git
 paru
 paru-debug
 pistol-bin
