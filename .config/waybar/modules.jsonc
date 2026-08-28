@@ -250,13 +250,18 @@
       "transition-duration": 300,
       "transition-left-to-right": true,
     },
-    "modules": ["custom/arrow-left", "custom/notifications", "custom/weather", "custom/cpufreq", "custom/wallpaperengine", "custom/theme-switcher"],
+    "modules": ["custom/arrow-left", "custom/notifications", "custom/weather", "custom/cpufreq", "custom/rgb", "custom/wallpaperengine", "custom/theme-switcher"],
   },
   "custom/cpufreq": {
     "tooltip": false,
     "exec": "case $(cat ~/.cache/auto-cpufreq-mode 2>/dev/null) in silent) echo '󰢝';; performance) echo '󰓅';; *) echo '󰗑';; esac",
     "interval": 2,
     "on-click": "~/.config/hypr/scripts/cpufreq_picker.sh",
+  },
+  "custom/rgb": {
+    "format": "󰟖",
+    "tooltip": false,
+    "on-click": "ckb-next",
   },
   "custom/wallpaperengine": {
     "format": "󰸉",

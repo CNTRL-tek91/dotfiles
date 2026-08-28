@@ -110,8 +110,8 @@ Until then `~/.cache/wal/` is empty and **waybar will not start at all**.
 | `Super+M` / `Super+Shift+M` | minimise to special workspace / restore |
 | `Super+V` | clipboard history |
 | `Super+W` / `Super+Shift+W` | random wallpaper / wallpaper picker |
-| **`Super+Shift+V`** (Laptop 2 only) | Live wallpaper picker (`linux-wallpaperengine`) - see `system/README.md` |
-| **`Ctrl+Super+V`** (Laptop 2 only) | Stops the live wallpaper, reveals the normal static one again |
+| **`Super+Shift+V`** (Laptop 2 only) | Live wallpaper picker (`linux-wallpaperengine`), also re-themes the desktop to match it - see `system/README.md` |
+| **`Ctrl+Super+V`** (Laptop 2 only) | Stops the live wallpaper and reverts the theme back to the static wallpaper's colors |
 | `Super+Shift+L` / `Shift+N` / `Shift+P` | logout menu / notifications / colour picker |
 | `Super+F1` | game mode |
 | `Super+X`, then `Super+Escape` | passthrough submap (send keys to a VM/app) |

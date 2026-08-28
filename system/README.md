@@ -31,6 +31,22 @@ can't paint a Wayland desktop even under Proton (it only knows how to hook
 into Windows' compositor) - `linux-wallpaperengine` is what actually renders
 the background, via `wlr-layer-shell`, independent of the Steam app.
 
+Also re-themes the desktop to match, same as picking a static wallpaper
+does. A live scene has no single static image the wal/matugen/wallust
+pipeline can read, so `linux-wallpaperengine`'s own `--screenshot` flag
+(documented by the project as built "for use with tools like PyWAL") grabs
+an actual rendered frame, which `scripts/wallpaperengine_retheme.sh` feeds
+through the same matugen/wallust pipeline as `scripts/wallpaper.sh` - minus
+the parts specific to setting a static wallpaper, since the live scene
+itself stays the visible one. `Ctrl+Super+V` (stop) reverts the theme back
+by re-running the normal static pipeline on `~/Pictures/wallpaper.png`.
+
+`--silent` alone doesn't fully mute a wallpaper's audio - PipeWire still
+showed an unmuted, 100%-volume stream for the process despite the flag.
+`wallpaperengine-rofi.sh` also explicitly mutes the stream via `pactl` once
+it appears (short retry loop - it doesn't exist the instant the process
+starts).
+
 ## Exclude on non-ROG hardware
 
 `asusctl`, `supergfxctl`, `rog-control-center` are ASUS ROG only.

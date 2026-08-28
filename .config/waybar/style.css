@@ -156,6 +156,7 @@ tooltip label {
 #custom-notifications,
 #custom-weather,
 #custom-cpufreq,
+#custom-rgb,
 #custom-wallpaperengine,
 #custom-theme-switcher {
   padding: 0px 8px;
@@ -182,4 +183,4 @@ tooltip label {
 #battery {
   padding: 0px 8px;
 }
-/* wal-reload 1787551811073615767 */
+/* wal-reload 1787951425466163004 */
