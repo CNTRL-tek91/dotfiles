@@ -75,7 +75,6 @@ nvidia-settings
 nvtop
 nwg-displays
 nwg-look
-openrgb
 os-prober
 otf-font-awesome
 pacman-contrib

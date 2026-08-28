@@ -81,8 +81,23 @@ that's expected, not fixable by config. `openrgb` recognizes it directly
 and by name ("Lenovo Legion Y740"), with a full per-key RGB map including
 the Legion logo, power button, vents, and USB ports. The waybar RGB icon
 launches `openrgb` for this reason. Keep `ckb-next` installed in case a
-real Corsair peripheral gets plugged in later, but the `ckb-next-daemon`
-systemd service currently serves no purpose on this machine.
+real Corsair peripheral gets plugged in later; `ckb-next-daemon` is
+`systemctl disable --now`'d since it currently serves no purpose here.
+
+### `openrgb-git`, not the `extra` repo's `openrgb`
+
+The keyboard's own driver only exposes "Direct" mode (static per-LED
+colors) - the rainbow-wave/breathing/spectrum-cycle effects come from the
+separate **OpenRGB Effects Plugin** (`openrgb-plugin-effects-git`, AUR),
+which depends on `qt6-tools`. Arch's official `extra` repo ships `openrgb`
+built against **Qt5** (confirmed via `ldd`) - a Qt6 plugin won't load
+against a Qt5 host, Qt plugins can't cross major versions. Swapped to
+`openrgb-git` (AUR), which is Qt6 and declares `Conflicts: openrgb` /
+`Provides: openrgb`, so `paru -S openrgb-git openrgb-plugin-effects-git`
+removes the `extra` package cleanly in the same transaction - not a
+plugin-only install. Verified the plugin actually loaded via
+`~/.config/OpenRGB/logs/` ("58 effects registered"), not just that the
+package installed.
 
 ## `auto-cpufreq` masks `power-profiles-daemon`
 

@@ -8,6 +8,8 @@ grimblast-git
 gtk-engine-murrine
 libcava
 linux-wallpaperengine-git
+openrgb-git
+openrgb-plugin-effects-git
 paru
 pistol-bin
 python-pywal16
