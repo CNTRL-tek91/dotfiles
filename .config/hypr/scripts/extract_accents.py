@@ -67,8 +67,20 @@ PALETTE_DARK, PALETTE_LIGHT = "harddark16", "light16"
 
 # Minimum WCAG contrast ratio an accent must reach against the background.
 # wallust's own check leaves some colours near 2.0, which is readable for a UI
-# accent but marginal for text. Lifting to 3.0 costs little separation.
-MIN_CONTRAST = 3.0
+# accent but marginal for text.
+#
+# 4.0 rather than WCAG AA's 4.5 for body text, because the cost is not uniform.
+# Lifting lightness on an already-desaturated wallpaper converges its colours
+# toward the same pale grey, so the gain in readability is paid for in colours
+# you can no longer tell apart. Measured going 3.0 -> 4.5: saturated wallpapers
+# lose nothing (29.0 -> 29.1 mean Lab separation on the current one, 38.0 ->
+# 37.9 on Northern Lights), but muted ones lose a third of their separation
+# (341402 14.4 -> 9.8, xeno2 24.1 -> 17.1). At 4.0 those same two give 11.4 and
+# 19.9 - most of the readability, far less of the damage.
+#
+# Tune with --min-contrast; --preview prints separation and contrast together so
+# both sides of the trade are visible.
+MIN_CONTRAST = 4.0
 
 # Material You role -> ANSI slot, lifted from omarchy-auto-theme's
 # omarchy-quattro-colors.toml so the comparison is against what that project
@@ -229,6 +241,8 @@ def main():
     ap.add_argument("--light", action="store_true")
     ap.add_argument("--preview", action="store_true")
     ap.add_argument("--engine", choices=("wallust", "matugen"), default=None)
+    ap.add_argument("--min-contrast", type=float, default=MIN_CONTRAST,
+                    help="minimum WCAG contrast ratio against the background")
     a = ap.parse_args()
 
     # --engine wins; otherwise a one-word file, so switching engines (and
@@ -255,7 +269,7 @@ def main():
         sys.exit(f"{engine} produced no palette")
 
     for i in list(range(1, 7)) + list(range(9, 15)):
-        data["colors"][f"color{i}"] = lift_contrast(pal[i], bg)
+        data["colors"][f"color{i}"] = lift_contrast(pal[i], bg, a.min_contrast)
     after = [data["colors"][f"color{i}"] for i in range(1, 7)]
 
     if a.preview:
