@@ -35,7 +35,11 @@ return {
       },
     })
 
-    local ruff_config_path = vim.loop.os_homedir() .. "/.config/nvim/tool_configs/ruff.toml"
+    -- stdpath("config") follows NVIM_APPNAME, so this resolves to this
+    -- config's own directory whether it is loaded as ~/.config/nvim or as
+    -- ~/.config/nvim-custom. Hardcoding ~/.config/nvim broke the moment
+    -- LazyVim took that path over.
+    local ruff_config_path = vim.fn.stdpath("config") .. "/tool_configs/ruff.toml"
     vim.lsp.config("ruff", {
       init_options = {
         settings = {

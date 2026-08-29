@@ -7,7 +7,11 @@ return {
       sources = {
         -- Lua
         null_ls.builtins.formatting.stylua.with({
-          extra_args = { "--config-path", vim.loop.os_homedir() .. "/.config/nvim/tool_configs/stylua.toml" },
+          -- stdpath("config") follows NVIM_APPNAME, so this resolves to this
+          -- config's own directory whether it is loaded as ~/.config/nvim or
+          -- as ~/.config/nvim-custom. Hardcoding ~/.config/nvim broke the
+          -- moment LazyVim took that path over.
+          extra_args = { "--config-path", vim.fn.stdpath("config") .. "/tool_configs/stylua.toml" },
         }),
         -- JavaScript, TypeScript, JSX, TSX, JSON, CSS and GraphQL
         null_ls.builtins.formatting.prettierd,
