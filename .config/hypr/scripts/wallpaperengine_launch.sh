@@ -22,8 +22,17 @@ rm -f "$SHOT"
 # --screenshot: captures an actual rendered frame, used below to re-theme
 # the desktop the same way a static wallpaper would - built for exactly
 # this by linux-wallpaperengine itself ("for use with tools like PyWAL").
+# --screenshot-delay: frames to wait before capturing. The default is 5,
+# which at the default 30fps is ~0.17s of rendering - long before a scene
+# of any weight has drawn anything, so the captured frame comes out
+# uniformly black and the whole desktop themes black off it. Measured on
+# the wallpaper this surfaced on (a 122MB mp4): the default wrote a
+# 1-unique-colour black frame ~2s in, while 300 frames wrote a real
+# 175471-colour frame whose dominant tones (#E91327, #B11623) match the
+# wallpaper. Counted in rendered frames rather than wall-clock, so it
+# scales with an already-struggling scene instead of firing regardless.
 nohup linux-wallpaperengine --layer background --silent --screen-root eDP-1 --bg "$id" \
-  --screenshot "$SHOT" \
+  --screenshot "$SHOT" --screenshot-delay 300 \
   > "$HOME/.cache/wallpaperengine.log" 2>&1 &
 disown
 
