@@ -18,16 +18,19 @@ fi
 
 wal -i "$WALL_IMG" --cols16 $wal_arguments -q -n -e
 
-# pywal picks the palette out of the image, so a wallpaper with any colour cast
-# collapses all six accent slots onto one hue - a red wallpaper themes the whole
-# desktop in six shades of red, with nothing left to distinguish a string from a
-# keyword from an error. harmonize_palette.py rewrites those slots to properly
-# separated hues while keeping the wallpaper's saturation/brightness character,
-# then wal --theme regenerates all ~60 template files from the result, so every
-# consumer (kitty, waybar, hyprland, nvim, ...) picks it up with no changes of
-# its own. Both steps are best-effort: if either fails the original pywal
-# palette is already on disk and the desktop still themes, just monochromatically.
-if python3 ~/.config/hypr/scripts/harmonize_palette.py "$WALL_IMG" 2>/dev/null; then
+# pywal crowds all six accent slots into one narrow band, so the six colours are
+# barely distinguishable from each other - on the current red wallpaper it even
+# returns six greys. extract_accents.py hands extraction to wallust instead,
+# which picks perceptually separated colours out of the SAME image (measured
+# better on all 12 wallpapers here), then wal --theme regenerates all ~60
+# template files from the result so every consumer - kitty, waybar, hyprland,
+# nvim - picks it up with no change of its own.
+#
+# Best-effort: if either step fails, pywal's own palette is already on disk, so
+# the desktop still themes, just with duller accents.
+accent_args=("$WALL_IMG")
+[ -n "$wal_arguments" ] && accent_args+=(--light)
+if python3 ~/.config/hypr/scripts/extract_accents.py "${accent_args[@]}" 2>/dev/null; then
   wal --theme "$HOME/.cache/wal/colors.json" -q -n -e 2>/dev/null
 fi
 
