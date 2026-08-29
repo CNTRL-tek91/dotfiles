@@ -12,7 +12,40 @@ id="$1"
 
 pkill -f 'linux-wallpaperengine' 2>/dev/null
 SHOT="$HOME/.cache/wallpaperengine-shot.png"
+WORKSHOP_DIR="$HOME/.local/share/Steam/steamapps/workshop/content/431960"
 rm -f "$SHOT"
+
+# How long to let the scene render before grabbing the theming screenshot
+# depends entirely on what kind of wallpaper it is - measured, not guessed:
+#
+#   scene wallpapers  - drawing by the time the default 5-frame delay fires.
+#                       A 800K scene gave a usable 1594-colour frame 1.7s in,
+#                       and a 58MB scene 82646 colours at 2.3s. Size barely
+#                       matters here; they just render immediately.
+#   video wallpapers  - black at the default regardless of size, because the
+#                       decoder hasn't produced a frame yet. The 123MB mp4
+#                       that surfaced this wrote a 1-colour black frame ~2s
+#                       in at the default, and a real 175471-colour frame
+#                       matching the wallpaper at 300.
+#
+# So charging every wallpaper the video-sized wait would make scenes - the
+# bulk of the collection - re-theme ~10s after the picker closes instead of
+# the ~2s they actually need. Type comes from the wallpaper's own
+# project.json; presets carry no "type" of their own and instead point at
+# the scene they're built on via "dependency", so follow that. Anything
+# still unknown is treated as a scene: presets are scene-based, and the
+# unrendered-frame guard below is what actually catches a bad capture.
+proj="$WORKSHOP_DIR/$id/project.json"
+wp_type=$(jq -r '.type // empty' "$proj" 2>/dev/null | tr '[:upper:]' '[:lower:]')
+if [ -z "$wp_type" ]; then
+  dep=$(jq -r '.dependency // empty' "$proj" 2>/dev/null)
+  [ -n "$dep" ] && wp_type=$(jq -r '.type // empty' \
+    "$WORKSHOP_DIR/$dep/project.json" 2>/dev/null | tr '[:upper:]' '[:lower:]')
+fi
+case "$wp_type" in
+  video) shot_delay=300 ;;
+  *)     shot_delay=5   ;;
+esac
 # --layer background: without it, linux-wallpaperengine defaults to the
 # "bottom" layer - the same level waybar renders on - and since it's a
 # full-screen surface added after waybar, it covers the bar entirely.
@@ -22,17 +55,11 @@ rm -f "$SHOT"
 # --screenshot: captures an actual rendered frame, used below to re-theme
 # the desktop the same way a static wallpaper would - built for exactly
 # this by linux-wallpaperengine itself ("for use with tools like PyWAL").
-# --screenshot-delay: frames to wait before capturing. The default is 5,
-# which at the default 30fps is ~0.17s of rendering - long before a scene
-# of any weight has drawn anything, so the captured frame comes out
-# uniformly black and the whole desktop themes black off it. Measured on
-# the wallpaper this surfaced on (a 122MB mp4): the default wrote a
-# 1-unique-colour black frame ~2s in, while 300 frames wrote a real
-# 175471-colour frame whose dominant tones (#E91327, #B11623) match the
-# wallpaper. Counted in rendered frames rather than wall-clock, so it
-# scales with an already-struggling scene instead of firing regardless.
+# --screenshot-delay: frames to wait before capturing, chosen per wallpaper
+# type just above. Counted in rendered frames rather than wall-clock, so it
+# stretches with a struggling scene instead of firing regardless.
 nohup linux-wallpaperengine --layer background --silent --screen-root eDP-1 --bg "$id" \
-  --screenshot "$SHOT" --screenshot-delay 300 \
+  --screenshot "$SHOT" --screenshot-delay "$shot_delay" \
   > "$HOME/.cache/wallpaperengine.log" 2>&1 &
 disown
 
