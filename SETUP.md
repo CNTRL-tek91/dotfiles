@@ -84,9 +84,48 @@ this is the least obvious part of the setup:
    reason as the files above.
 4. **`matugen`** — Material You colours for the UI: waybar, hypr, tofi, dunst.
 
+### Hue harmonisation — why the palette isn't monochrome
+
+pywal builds the palette from colours it finds in the image, so **any wallpaper
+with a colour cast collapses all six accent slots onto one hue**. Measured on a
+warm wallpaper, colours 1–6 spanned **5.5°** — one colour with six names. Nothing
+could distinguish a string from a keyword from an error.
+
+`hypr/scripts/harmonize_palette.py` runs inside `apply_wal_theme.sh`, between
+pywal's extraction and the kitty readability pass. It rebuilds slots 1–6 (and
+9–14) at properly separated hues — red, green, yellow, blue, magenta, cyan, the
+slots every syntax highlighter assumes — and unifies them by giving all six the
+wallpaper's own saturation and brightness character. That is how designed themes
+(catppuccin, darcula) cohere. Background, foreground and the greys pass through
+untouched, so the desktop's overall mood still comes straight from the wallpaper.
+
+The result is fed back through `wal --theme`, which regenerates all ~60 template
+files, so **every consumer picks it up with no change of its own**. Same warm
+wallpaper, after: `#be4e30 #30be32 #be8930 #308fbe #be30bd #30bdbe`, ~180° spread.
+
+Two non-obvious things, both found by measuring rather than eyeballing — don't
+"simplify" either one back:
+
+| | |
+|---|---|
+| The wheel is rotated **rigidly** toward the wallpaper's dominant hue, not pulled hue-by-hue | Pulling individually compresses the wheel: with a warm wallpaper, blue and cyan both slide into green and slot 4 stops being blue |
+| Saturation/value are **scaled** into the readable band, not clamped into it | Most photographs sit below a 0.45 saturation floor, so clamping made every muted wallpaper produce a byte-identical palette — the feature's own failure mode |
+
+Tuning: `--pull` (default `0.30`) sets how far the wheel rotates toward the
+wallpaper — `0.0` is a neutral rainbow, `1.0` approaches pywal's old monochrome.
+`--preview` prints the before/after palette and hue spread without writing
+anything, which is the right way to try a value:
+
+```sh
+~/.config/hypr/scripts/harmonize_palette.py ~/Pictures/wallpaper.png --preview --pull 0.5
+```
+
 Entry points: `hypr/scripts/wallpaper.sh` (apply + retheme),
 `apply_wal_theme.sh` (retheme current), `random_wallpaper.sh` (`Super+W`),
-`custom_scripts/wallpaper_select.sh` (`Super+Shift+W`).
+`custom_scripts/wallpaper_select.sh` (`Super+Shift+W`). All of them funnel
+through `apply_wal_theme.sh`, so the harmonisation applies to every path —
+static wallpapers, random, theme toggle, and live wallpapers via
+`wallpaperengine_retheme.sh`.
 
 `apply_wal_theme.sh` also live-reloads kitty (SIGUSR1), nudges waybar, pushes
 colours to LibreWolf via `pywalfox`, and syncs the SDDM login background.
