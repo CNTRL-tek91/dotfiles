@@ -8,6 +8,13 @@
 -- signcolumn, laststatus 3, nowrap, fillchars eob) is deliberately not
 -- repeated - duplicating it would just create a second place to keep in sync.
 
+-- LazyVim's python extra defaults to pyright. nvim-custom used basedpyright
+-- (it is what mason installed there), and basedpyright is the stricter fork
+-- with better inference, so keep it. Without this the configured server is
+-- pyright, which is not installed - leaving python with only ruff attached and
+-- no type checking or completion at all.
+vim.g.lazyvim_python_lsp = "basedpyright"
+
 local opt = vim.opt
 
 -- More context around the cursor than LazyVim's 4/8. Carried over from
