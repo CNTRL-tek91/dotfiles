@@ -30,8 +30,21 @@ Only slots 1-6 and 9-14 are replaced. Background, foreground and the greys stay
 pywal's, because they set the desktop's overall mood and already look right -
 this is meant to fix the accents, not restyle everything.
 
+Two engines are available so they can be compared, selected with --engine or
+by putting a word in ~/.config/hypr/theme_engine:
+
+  wallust  (default)  Colours sampled from the image in Lab space. What is on
+                      screen is what you get.
+  matugen             Material You. Derives a principled tonal system from the
+                      image's dominant colour, mapping Material roles onto the
+                      ANSI slots the way AccursedGalaxy/omarchy-auto-theme does
+                      (red=error, green=tertiary, yellow=primary_fixed,
+                      blue=primary, magenta=secondary, cyan=tertiary_fixed).
+                      That project itself only runs on Omarchy, which is not
+                      installed here; this is a port of its colour mapping.
+
 Usage:
-    extract_accents.py IMAGE [--light] [--preview]
+    extract_accents.py IMAGE [--light] [--preview] [--engine wallust|matugen]
 """
 import argparse
 import colorsys
@@ -56,6 +69,19 @@ PALETTE_DARK, PALETTE_LIGHT = "harddark16", "light16"
 # wallust's own check leaves some colours near 2.0, which is readable for a UI
 # accent but marginal for text. Lifting to 3.0 costs little separation.
 MIN_CONTRAST = 3.0
+
+# Material You role -> ANSI slot, lifted from omarchy-auto-theme's
+# omarchy-quattro-colors.toml so the comparison is against what that project
+# actually does rather than a mapping of my own invention. The bright variants
+# are its set_lightness values.
+MATUGEN_SLOTS = {
+    1: ("error", 84.0),
+    2: ("tertiary", 84.0),
+    3: ("primary_fixed", 90.0),
+    4: ("primary", 84.0),
+    5: ("secondary", 84.0),
+    6: ("tertiary_fixed", 90.0),
+}
 
 
 def _lin(c):
@@ -140,6 +166,55 @@ def wallust_palette(image, light):
     return dict(enumerate(vals)) if len(vals) >= 16 else None
 
 
+def set_lightness(hx, pct):
+    """matugen's set_lightness filter: force HSL lightness to a percentage."""
+    r, g, b = (v / 255 for v in _rgb(hx))
+    h, _, sat = colorsys.rgb_to_hls(r, g, b)
+    return "#" + "".join(
+        f"{round(max(0, min(1, c)) * 255):02x}"
+        for c in colorsys.hls_to_rgb(h, pct / 100.0, sat))
+
+
+def matugen_palette(image, light):
+    """Material You palette via matugen. Returns {index: hex} or None.
+
+    --dry-run matters: without it matugen would render the templates in
+    ~/.config/matugen/config.toml and retheme waybar/hypr/tofi/dunst as a side
+    effect of merely asking it for colours.
+    """
+    mode = "light" if light else "dark"
+    try:
+        out = subprocess.run(
+            ["matugen", "image", image, "--dry-run", "--json", "hex",
+             "--prefer", "saturation", "--mode", mode, "-q"],
+            capture_output=True, text=True, timeout=120, check=True).stdout
+    except (subprocess.SubprocessError, FileNotFoundError):
+        return None
+    # Shape is colors -> role -> mode -> {"color": "#rrggbb"}, i.e. keyed by
+    # role first and mode second, not the other way round.
+    try:
+        roles = json.loads(out)["colors"]
+    except (ValueError, KeyError):
+        return None
+
+    def role(name):
+        v = roles.get(name)
+        if isinstance(v, dict):
+            v = v.get(mode, v.get("default"))
+            if isinstance(v, dict):
+                v = v.get("color")
+        return v if isinstance(v, str) and v.startswith("#") else None
+
+    pal = {}
+    for slot, (name, bright_l) in MATUGEN_SLOTS.items():
+        base = role(name)
+        if base is None:
+            return None
+        pal[slot] = base
+        pal[slot + 8] = set_lightness(base, bright_l)
+    return pal
+
+
 def score(cols, bg):
     pts = [lab(c) for c in cols]
     ds = [math.dist(pts[i], pts[j])
@@ -153,7 +228,20 @@ def main():
     ap.add_argument("image")
     ap.add_argument("--light", action="store_true")
     ap.add_argument("--preview", action="store_true")
+    ap.add_argument("--engine", choices=("wallust", "matugen"), default=None)
     a = ap.parse_args()
+
+    # --engine wins; otherwise a one-word file, so switching engines (and
+    # switching back) is a single edit with nothing to reinstall.
+    engine = a.engine
+    if engine is None:
+        try:
+            engine = open(os.path.expanduser(
+                "~/.config/hypr/theme_engine")).read().strip()
+        except OSError:
+            engine = "wallust"
+        if engine not in ("wallust", "matugen"):
+            engine = "wallust"
 
     if not os.path.exists(COLORS_JSON):
         sys.exit("no pywal palette to build on")
@@ -161,9 +249,10 @@ def main():
     bg = data["special"]["background"]
     before = [data["colors"][f"color{i}"] for i in range(1, 7)]
 
-    pal = wallust_palette(a.image, a.light)
+    pal = (matugen_palette if engine == "matugen" else wallust_palette)(
+        a.image, a.light)
     if pal is None:
-        sys.exit("wallust produced no palette")
+        sys.exit(f"{engine} produced no palette")
 
     for i in list(range(1, 7)) + list(range(9, 15)):
         data["colors"][f"color{i}"] = lift_contrast(pal[i], bg)
@@ -172,7 +261,7 @@ def main():
     if a.preview:
         bm, bmin, bc = score(before, bg)
         am, amin, ac = score(after, bg)
-        print(f"background {bg}")
+        print(f"engine {engine}   background {bg}")
         print(f"  before  dist {bm:5.1f}/{bmin:5.1f}  contrast {bc:4.2f}  "
               + " ".join(before))
         print(f"  after   dist {am:5.1f}/{amin:5.1f}  contrast {ac:4.2f}  "

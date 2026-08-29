@@ -28,6 +28,10 @@ wal -i "$WALL_IMG" --cols16 $wal_arguments -q -n -e
 #
 # Best-effort: if either step fails, pywal's own palette is already on disk, so
 # the desktop still themes, just with duller accents.
+# Which extraction engine to use. extract_accents.py reads the same file
+# itself; passing nothing here keeps the choice in one place. Switch engines -
+# or switch back - by putting `wallust` or `matugen` in
+# ~/.config/hypr/theme_engine, with nothing to reinstall either way.
 accent_args=("$WALL_IMG")
 [ -n "$wal_arguments" ] && accent_args+=(--light)
 if python3 ~/.config/hypr/scripts/extract_accents.py "${accent_args[@]}" 2>/dev/null; then
