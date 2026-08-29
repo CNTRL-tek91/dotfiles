@@ -17,7 +17,7 @@ and pywal, so every application's palette follows whatever is on screen.
 | Launcher | rofi (plus tofi and fuzzel), with menus for wallpapers, clipboard, emoji, calc and theme switching |
 | Notifications | swaync, dunst, swayosd for volume and brightness overlays |
 | Terminal | kitty, with ghostty and wezterm configured alongside |
-| Editor | Neovim, lazy.nvim, plugin versions pinned in `lazy-lock.json` |
+| Editor | Neovim + LazyVim; the previous hand-rolled config is kept runnable at `nvim-custom/` (`vc`) |
 | Shell | zsh with zinit, starship, zoxide, fzf-tab |
 | Theming | wallust and matugen templates, Kvantum, qt5ct/qt6ct, GTK 3/4 |
 | Files | Thunar, `lf` |

@@ -49,7 +49,7 @@ nouveau loads beside the proprietary driver and causes intermittent black screen
 | Volume/brightness OSD | `swayosd` | `swayosd/` |
 | Wallpaper daemon | `awww` | driven by `set_wallpaper.sh` |
 | Terminal | `kitty` (+ `ghostty`, `wezterm` configured) | `kitty/` |
-| Editor | `neovim` + lazy.nvim | `nvim/`, versions pinned in `lazy-lock.json` |
+| Editor | `neovim` + LazyVim | `nvim/`; previous custom config at `nvim-custom/`, run with `vc` |
 | Shell | `zsh` + zinit + `starship` + `zoxide` + `fzf` | `.zshrc` |
 | File manager | `thunar` | `Thunar/`, `xfce4/` |
 | Clipboard | `cliphist` + `wl-clipboard` | `Super+V` |
@@ -67,16 +67,22 @@ nouveau loads beside the proprietary driver and causes intermittent black screen
 
 ## 3. Theming pipeline
 
-The desktop recolours itself from the wallpaper. **Three** tools split the work —
+The desktop recolours itself from the wallpaper. **Four** tools split the work —
 this is the least obvious part of the setup:
 
 1. **`wal` (python-pywal16)** — writes `~/.cache/wal/*`, ~60 files consumed by
    many apps. **Not in the repo**: `~/.cache/` is machine-local, so on a new
    machine every wal-dependent config is broken until the theme script runs once.
-2. **`wallust` (pinned 3.5.2)** — terminal + editor palettes only, so code stays
-   readable. Targets `kitty/wallust-colors.conf` and `nvim/lua/wallust_base16.lua`.
-   Both are **gitignored generated output**.
-3. **`matugen`** — Material You colours for the UI: waybar, hypr, tofi, dunst.
+2. **`wallust` (pinned 3.5.2)** — terminal palette, so code stays readable.
+   Targets `kitty/wallust-colors.conf` and `nvim-custom/lua/wallust_base16.lua`.
+   Both are **gitignored generated output**. Note the nvim target is **dead** —
+   nothing has ever read `wallust_base16.lua`; Neovim is themed by lushwal
+   reading `~/.cache/wal` directly, in both the LazyVim and nvim-custom configs.
+3. **`lushwal`** — the Neovim end of the pipeline. Builds a colorscheme from
+   pywal's cache at startup, so the editor tracks the wallpaper like everything
+   else. It compiles into `nvim/colors/`, which is gitignored for the same
+   reason as the files above.
+4. **`matugen`** — Material You colours for the UI: waybar, hypr, tofi, dunst.
 
 Entry points: `hypr/scripts/wallpaper.sh` (apply + retheme),
 `apply_wal_theme.sh` (retheme current), `random_wallpaper.sh` (`Super+W`),
