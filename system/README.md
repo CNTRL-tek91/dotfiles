@@ -61,17 +61,37 @@ starts).
 
 ### `--screenshot` needs a real delay or it captures a black frame
 
-`--screenshot-delay` defaults to **5 frames** - at the default 30fps that's
-~0.17s of rendering, long before a scene of any weight has drawn anything.
-The capture comes out uniformly black, `wal` derives a black palette from
-it, and the whole desktop themes black under a wallpaper that isn't. This
-looks exactly like "re-theming silently stopped working," because every
-step *does* run and report success - the input image is just wrong.
-`scripts/wallpaperengine_launch.sh` passes `--screenshot-delay 300`.
-Measured on a 122MB mp4 wallpaper: the default wrote a 1-unique-colour
-black frame ~2s in; 300 frames wrote a real 175471-colour frame matching
-the wallpaper. The delay counts rendered frames, not wall-clock, so it
-stretches with a slow scene rather than firing regardless.
+`--screenshot-delay` defaults to **5 frames** - at 30fps, ~0.17s of
+rendering. For a **video** wallpaper the decoder hasn't produced a frame by
+then, so the capture comes out black, `wal` derives a black palette from it,
+and the whole desktop themes black under a wallpaper that isn't. This looks
+exactly like "re-theming silently stopped working," because every step *does*
+run and report success - only the input image is wrong.
+
+The delay that fixes it is expensive, so `scripts/wallpaperengine_launch.sh`
+picks it per wallpaper **type** instead of charging everything the worst
+case. Measured, and it's type that matters, not size:
+
+| wallpaper | default 5 frames | 300 frames |
+|---|---|---|
+| scene, 800K | 1594 colours @ 1.7s | (not needed) |
+| scene, 58M | 82646 colours @ 2.3s | (not needed) |
+| video, 3.8M | black | - |
+| video, 123M | black (1 colour) | 175471 colours |
+
+Scenes are drawing by the time the default fires regardless of size; videos
+are black at the default regardless of size. So: `type == video` → 300
+frames, everything else → the default. Type comes from the wallpaper's own
+`project.json`; **presets have no `type`** and instead point at the scene
+they're built on via `dependency`, so that's followed one hop, with anything
+still unknown treated as a scene. End-to-end, timing the palette kitty and
+waybar actually read: scene re-themes in ~2.1s, video ~2.5s warm and ~10s
+cold (waiting on the decoder is unavoidable).
+
+Note some wallpapers are just **genuinely dark** - one video here has a
+`preview.jpg` of mean brightness 0.017 and a real decoded frame at 0.009, so
+a dark palette from it is correct output, not a failed capture. That's why
+the guard below keys on colour *count* rather than brightness.
 
 Two guards sit alongside it, both worth keeping:
 
@@ -84,7 +104,9 @@ Two guards sit alongside it, both worth keeping:
   frame leaves the previous palette alone instead of blackening the
   desktop. A failed capture measures exactly 1; a good one measured
   175471, so the two are not close. `identify` also errors on a truncated
-  PNG, which the same check catches for free.
+  PNG, which the same check catches for free. Deliberately *not* a
+  brightness threshold: a genuinely dark wallpaper (see above) would trip
+  that and get its correct dark palette thrown away.
 
 When touching this, verify against **actually rendered colours**
 (`~/.cache/wal/colors`, `~/.cache/wal/colors-kitty-readable.conf` - the
