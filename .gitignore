@@ -27,3 +27,8 @@
 # not configuration. Tracking these guarantees conflicts between machines.
 .config/kitty/wallust-colors.conf
 .config/nvim-custom/lua/wallust_base16.lua
+# lushwal compiles a colorscheme from pywal's cache into the *config*
+# directory - the path is hardcoded to $XDG_CONFIG_HOME/nvim/colors, which
+# stow points straight back into this repo. Same class of file as the two
+# above: wallpaper-derived, regenerated on every wallpaper change.
+.config/nvim/colors/
