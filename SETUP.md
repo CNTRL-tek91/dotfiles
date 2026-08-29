@@ -84,40 +84,46 @@ this is the least obvious part of the setup:
    reason as the files above.
 4. **`matugen`** — Material You colours for the UI: waybar, hypr, tofi, dunst.
 
-### Hue harmonisation — why the palette isn't monochrome
+### Accent extraction — why the palette isn't six shades of one colour
 
-pywal builds the palette from colours it finds in the image, so **any wallpaper
-with a colour cast collapses all six accent slots onto one hue**. Measured on a
-warm wallpaper, colours 1–6 spanned **5.5°** — one colour with six names. Nothing
-could distinguish a string from a keyword from an error.
+pywal crowds all six accent slots into one narrow band. Measured across the 12
+wallpapers here, the **closest pair of accent colours was as little as 1.3 Lab
+units apart** — the same colour to the eye. On a red wallpaper it returns six
+greys. Nothing distinguishes a string from a keyword from an error.
 
-`hypr/scripts/harmonize_palette.py` runs inside `apply_wal_theme.sh`, between
-pywal's extraction and the kitty readability pass. It rebuilds slots 1–6 (and
-9–14) at properly separated hues — red, green, yellow, blue, magenta, cyan, the
-slots every syntax highlighter assumes — and unifies them by giving all six the
-wallpaper's own saturation and brightness character. That is how designed themes
-(catppuccin, darcula) cohere. Background, foreground and the greys pass through
-untouched, so the desktop's overall mood still comes straight from the wallpaper.
+`hypr/scripts/extract_accents.py` runs inside `apply_wal_theme.sh`, between
+pywal's extraction and the kitty readability pass. It hands extraction to
+**wallust** — already installed, already used here for kitty — whose Lab
+colourspace picks perceptually separated colours out of the same image, with
+`--check-contrast` keeping them legible. The result is fed back through
+`wal --theme`, which regenerates all ~60 template files, so **every consumer
+picks it up with no change of its own**.
 
-The result is fed back through `wal --theme`, which regenerates all ~60 template
-files, so **every consumer picks it up with no change of its own**. Same warm
-wallpaper, after: `#be4e30 #30be32 #be8930 #308fbe #be30bd #30bdbe`, ~180° spread.
+Measured against pywal on all 12 wallpapers, wallust won on every one: mean
+pairwise Lab distance ~2–3× better, closest-pair distance 3–5× better.
 
-Two non-obvious things, both found by measuring rather than eyeballing — don't
-"simplify" either one back:
+Only slots 1–6 and 9–14 are replaced. Background, foreground and the greys stay
+pywal's — they set the desktop's mood and already look right.
 
-| | |
-|---|---|
-| The wheel is rotated **rigidly** toward the wallpaper's dominant hue, not pulled hue-by-hue | Pulling individually compresses the wheel: with a warm wallpaper, blue and cyan both slide into green and slot 4 stops being blue |
-| Saturation/value are **scaled** into the readable band, not clamped into it | Most photographs sit below a 0.45 saturation floor, so clamping made every muted wallpaper produce a byte-identical palette — the feature's own failure mode |
+**Don't "fix" this by synthesising hues.** An earlier version rebuilt the slots
+at canonical ANSI hues (red/green/yellow/blue/magenta/cyan) tinted toward the
+wallpaper. It scored beautifully on *hue spread* and was flatly wrong: a
+wallpaper containing only reds got green and magenta in its theme. Hue spread is
+the wrong metric — wallpapers legitimately have one hue. Sampling the red
+wallpaper, all 16 of its dominant colours sit between 340° and 356°; the variety
+that matters is in **lightness and saturation** (bright red, deep maroon, pale
+pink, near-black), which is exactly what a perceptual colourspace finds and what
+pywal misses. Judge any change here on pairwise Lab distance and contrast ratio,
+not hue.
 
-Tuning: `--pull` (default `0.30`) sets how far the wheel rotates toward the
-wallpaper — `0.0` is a neutral rainbow, `1.0` approaches pywal's old monochrome.
-`--preview` prints the before/after palette and hue spread without writing
-anything, which is the right way to try a value:
+Tuning lives at the top of the script: `COLORSPACE` (`lab` measured widest —
+`labmixed` scored well on the mean but left a pair 2.8 apart), `PALETTE_DARK`
+(`harddark16` orders brightest-first, which suits ANSI slots) and `MIN_CONTRAST`
+(3.0; lifts lightness only, never hue or saturation). `--preview` prints the
+before/after palette with both metrics and writes nothing:
 
 ```sh
-~/.config/hypr/scripts/harmonize_palette.py ~/Pictures/wallpaper.png --preview --pull 0.5
+~/.config/hypr/scripts/extract_accents.py ~/Pictures/wallpaper.png --preview
 ```
 
 Entry points: `hypr/scripts/wallpaper.sh` (apply + retheme),
