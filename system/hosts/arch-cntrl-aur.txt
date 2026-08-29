@@ -9,6 +9,8 @@ github-desktop-bin
 grimblast-git
 gtk-engine-murrine
 linux-wallpaperengine-git
+openrgb-git
+openrgb-plugin-effects-git
 paru
 paru-debug
 pistol-bin

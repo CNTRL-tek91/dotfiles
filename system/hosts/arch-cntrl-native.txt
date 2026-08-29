@@ -81,7 +81,6 @@ nvidia-utils
 nvtop
 nwg-displays
 nwg-look
-openrgb
 openssh
 otf-font-awesome
 pacman-contrib
