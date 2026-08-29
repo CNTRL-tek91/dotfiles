@@ -60,6 +60,10 @@ export AUTO_NOTIFY_BODY="It completed in %elapsed seconds"
 alias ls='lsd --tree --depth 1 --group-dirs=first'
 alias lsr='lsd --recursive --depth 1 --group-dirs=first'
 alias v="nvim"
+# The pre-LazyVim custom config, kept in the repo under .config/nvim-custom.
+# NVIM_APPNAME gives it its own plugin/state dirs (~/.local/share/nvim-custom),
+# so the two configs never share plugins and neither can break the other.
+alias vc="NVIM_APPNAME=nvim-custom nvim"
 alias cat="bat --theme base16"
 alias bt="btop"
 alias dil="docker images"
