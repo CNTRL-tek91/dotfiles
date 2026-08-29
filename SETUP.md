@@ -159,6 +159,22 @@ under both the LazyVim and `nvim-custom` configs, and it no-ops unless lushwal i
 the active colorscheme, so a theme picked deliberately with `<leader>uC` survives
 a wallpaper change.
 
+**The module-cache clear is load-bearing.** lushwal's addons — the per-plugin
+highlight generators for lualine, bufferline, gitsigns — open with
+`local colors = require("lushwal").colors` at module scope. Lua evaluates that
+once and caches it in `package.loaded`, so without clearing
+`lushwal.colors` and `lushwal.addons.*` the reload rebuilds those plugins from
+the palette they saw at editor startup, **forever**. The symptom is a theme
+split in half: syntax highlighting tracks the wallpaper while the statusline
+stays frozen — which looks like the reload doing nothing, since the statusline
+is the most colourful thing on screen. lualine also caches its resolved theme
+and rebuilds from its own `ColorScheme` autocmd, which has already fired by the
+time the modules are fresh, so it needs one explicit re-`setup()` after.
+
+Debugging: `~/.cache/nvim-theme-reload.log` records each run — sockets found and
+whether each accepted the reload. This runs with stderr discarded from a
+backgrounded subshell, so the log is the only visibility there is.
+
 ### On a fresh machine, run this once or the desktop looks broken
 
 ```sh
