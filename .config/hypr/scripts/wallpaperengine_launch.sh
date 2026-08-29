@@ -47,11 +47,19 @@ disown
 
 # Re-theme the desktop once the screenshot actually lands (retry - the
 # process needs a moment to start rendering before it can capture a frame).
+#
+# The wait window is deliberately generous. linux-wallpaperengine only writes
+# this file once, N rendered frames after startup, so if the poll gives up
+# before that write happens the desktop simply never re-themes. The old
+# 10 x 0.5s = 5s window was under that for anything but a trivially light
+# scene - a heavy one (e.g. a 122MB video wallpaper) is still loading well
+# past the 5s mark.
 (
-  for _ in 1 2 3 4 5 6 7 8 9 10; do
+  deadline=$(( SECONDS + 60 ))
+  while [ "$SECONDS" -lt "$deadline" ]; do
     if [ -f "$SHOT" ]; then
       ~/.config/hypr/scripts/wallpaperengine_retheme.sh "$SHOT"
-      break
+      exit 0
     fi
     sleep 0.5
   done
