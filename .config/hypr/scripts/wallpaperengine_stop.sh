@@ -8,6 +8,10 @@
 # normally.
 
 if pkill -f 'linux-wallpaperengine'; then
+  # Clear the "a live wallpaper was on" state, so wallpaperengine_autostart.sh
+  # leaves the static wallpaper alone on the next login/boot instead of
+  # bringing this one back.
+  rm -f "$HOME/.cache/wallpaperengine_state"
   ~/.config/hypr/scripts/apply_wal_theme.sh >/dev/null 2>&1
   notify-send -a "Wallpaper" -u low -t 1500 "Live wallpaper stopped" "Back to your static wallpaper"
 else

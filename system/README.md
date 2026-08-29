@@ -59,6 +59,29 @@ showed an unmuted, 100%-volume stream for the process despite the flag.
 it appears (short retry loop - it doesn't exist the instant the process
 starts).
 
+### Surviving reboot/sleep: which one comes back
+
+`linux-wallpaperengine` is just a process - a reboot, or even just logging
+back in, kills it the same as closing any other app, while
+`autostart.conf`'s `set_wallpaper.sh` unconditionally re-applies the static
+`~/Pictures/wallpaper.png` on every login regardless. Without anything
+tracking which kind was actually active, a live wallpaper would silently
+revert to static on every reboot even though nothing asked for that.
+
+The launch logic used to live directly in `wallpaperengine-rofi.sh`;
+pulled out into `scripts/wallpaperengine_launch.sh` so both the interactive
+picker and the login-time restore below call the exact same code, instead
+of two copies of the launch flags/mute-retry/retheme-retry drifting apart.
+It also writes the chosen Workshop id to `~/.cache/wallpaperengine_state`
+- `wallpaperengine_stop.sh` clears that file when the live wallpaper is
+turned off. `scripts/wallpaperengine_autostart.sh` (`exec-once` in
+`hosts/arch-cntrl.conf`, after `set_wallpaper.sh`) checks that file at
+login: present → relaunches the same Workshop item on top of the static
+layer underneath; absent (never turned on, or explicitly stopped) → leaves
+the static wallpaper alone. Either way the *other* one (static picked
+last, or a live wallpaper explicitly stopped) is exactly what should still
+be showing after a reboot, and now is.
+
 ## Exclude on non-ROG hardware
 
 `asusctl`, `supergfxctl`, `rog-control-center` are ASUS ROG only.

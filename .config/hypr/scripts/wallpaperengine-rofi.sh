@@ -3,7 +3,7 @@
 # a horizontal row (same layout as wallpaper-rofi.sh). Selecting one renders
 # it as the actual desktop background via linux-wallpaperengine, since the
 # Wallpaper Engine Steam app itself can't paint a Wayland desktop - it only
-# knows how to hook into Windows' compositor, even under Proton.
+# knows how to hook into Windows' own compositor, even under Proton.
 
 WORKSHOP_DIR="$HOME/.local/share/Steam/steamapps/workshop/content/431960"
 THUMBS="$HOME/.cache/wallpaperengine-thumbs"
@@ -26,45 +26,4 @@ emit() {
 chosen=$(emit | rofi -dmenu -i -p "Live Wallpaper" -theme "$HOME/.config/rofi/wallpaper.rasi")
 [ -z "$chosen" ] && exit 0
 
-pkill -f 'linux-wallpaperengine' 2>/dev/null
-SHOT="$HOME/.cache/wallpaperengine-shot.png"
-rm -f "$SHOT"
-# --layer background: without it, linux-wallpaperengine defaults to the
-# "bottom" layer - the same level waybar renders on - and since it's a
-# full-screen surface added after waybar, it covers the bar entirely.
-# --silent alone isn't fully trusted here: it suppresses sound generation,
-# but PipeWire still shows an unmuted, 100%-volume stream for the process.
-# Muted explicitly below as a guaranteed backstop.
-# --screenshot: captures an actual rendered frame, used below to re-theme
-# the desktop the same way a static wallpaper would - built for exactly
-# this by linux-wallpaperengine itself ("for use with tools like PyWAL").
-nohup linux-wallpaperengine --layer background --silent --screen-root eDP-1 --bg "$chosen" \
-  --screenshot "$SHOT" \
-  > "$HOME/.cache/wallpaperengine.log" 2>&1 &
-disown
-
-# Mute its PipeWire stream directly once it appears (retry - it doesn't
-# exist the instant the process starts).
-for _ in 1 2 3 4 5 6 7 8 9 10; do
-  idx=$(pactl -f json list sink-inputs 2>/dev/null | \
-    jq -r '.[] | select(.properties["application.name"]=="linux-wallpaperengine") | .index' | head -1)
-  if [ -n "$idx" ]; then
-    pactl set-sink-input-mute "$idx" 1
-    break
-  fi
-  sleep 0.5
-done &
-disown
-
-# Re-theme the desktop once the screenshot actually lands (retry - the
-# process needs a moment to start rendering before it can capture a frame).
-(
-  for _ in 1 2 3 4 5 6 7 8 9 10; do
-    if [ -f "$SHOT" ]; then
-      ~/.config/hypr/scripts/wallpaperengine_retheme.sh "$SHOT"
-      break
-    fi
-    sleep 0.5
-  done
-) &
-disown
+exec ~/.config/hypr/scripts/wallpaperengine_launch.sh "$chosen"

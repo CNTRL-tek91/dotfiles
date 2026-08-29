@@ -41,5 +41,11 @@ dunstctl reload 2>/dev/null           # dunst re-reads dunstrc
 killall -SIGUSR1 kitty 2>/dev/null    # kitty live-reloads its colors
 # tofi has no daemon; it picks up the new colors on next launch
 
-# Remember the choice so it loads on next boot
+# Remember the choice so it loads on next boot. set_wallpaper.sh (run at
+# every login via autostart.conf) always applies ~/Pictures/wallpaper.png
+# unconditionally, so THIS symlink - not current_wallpaper below, nothing
+# actually reads that one at boot - is what makes a newly-picked static
+# wallpaper survive a reboot instead of reverting to whatever it pointed
+# at before. Same convention random_wallpaper.sh already uses.
+ln -sfn "$WALL" "$HOME/Pictures/wallpaper.png"
 echo "$WALL" > "$HOME/.cache/current_wallpaper"
