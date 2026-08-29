@@ -134,7 +134,30 @@ static wallpapers, random, theme toggle, and live wallpapers via
 `wallpaperengine_retheme.sh`.
 
 `apply_wal_theme.sh` also live-reloads kitty (SIGUSR1), nudges waybar, pushes
-colours to LibreWolf via `pywalfox`, and syncs the SDDM login background.
+colours to LibreWolf via `pywalfox`, reloads any running Neovim, and syncs the
+SDDM login background.
+
+### Neovim's live reload is pushed, not watched
+
+`reload_nvim_theme.sh` walks the nvim server sockets at
+`$XDG_RUNTIME_DIR/nvim.<pid>.<n>` — nvim opens one automatically, so every
+running instance is reachable with no per-instance setup — and runs
+`nvim_wal_reload.lua` in each via `--remote-expr`.
+
+lushwal ships its own fs_event watcher for this and it is **not** dependable
+here: this pipeline rewrites `~/.cache/wal/colors.json` twice per change, a
+single-file watch does not survive its target being replaced, and the watcher
+only re-arms from the exit callback of a subprocess it spawns. Any one of those
+failing leaves an open editor stuck on stale colours for the rest of its
+session, with nothing to indicate why. Don't remove the push on the grounds that
+lushwal "already does this".
+
+`--remote-expr`, never `--remote-send` — the latter injects keystrokes, which
+corrupts whatever is being typed and misfires outside normal mode. The reload is
+a standalone `.lua` file rather than a command defined in the config so it works
+under both the LazyVim and `nvim-custom` configs, and it no-ops unless lushwal is
+the active colorscheme, so a theme picked deliberately with `<leader>uC` survives
+a wallpaper change.
 
 ### On a fresh machine, run this once or the desktop looks broken
 
