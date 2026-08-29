@@ -18,6 +18,19 @@ fi
 
 wal -i "$WALL_IMG" --cols16 $wal_arguments -q -n -e
 
+# pywal picks the palette out of the image, so a wallpaper with any colour cast
+# collapses all six accent slots onto one hue - a red wallpaper themes the whole
+# desktop in six shades of red, with nothing left to distinguish a string from a
+# keyword from an error. harmonize_palette.py rewrites those slots to properly
+# separated hues while keeping the wallpaper's saturation/brightness character,
+# then wal --theme regenerates all ~60 template files from the result, so every
+# consumer (kitty, waybar, hyprland, nvim, ...) picks it up with no changes of
+# its own. Both steps are best-effort: if either fails the original pywal
+# palette is already on disk and the desktop still themes, just monochromatically.
+if python3 ~/.config/hypr/scripts/harmonize_palette.py "$WALL_IMG" 2>/dev/null; then
+  wal --theme "$HOME/.cache/wal/colors.json" -q -n -e 2>/dev/null
+fi
+
 # Build a readability-floored, wallpaper-themed kitty palette, then live-reload
 # any running kitty instances (new windows pick it up automatically).
 python3 ~/.config/hypr/scripts/kitty_readable_colors.py 2>/dev/null

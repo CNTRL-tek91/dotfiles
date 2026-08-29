@@ -32,3 +32,6 @@
 # stow points straight back into this repo. Same class of file as the two
 # above: wallpaper-derived, regenerated on every wallpaper change.
 .config/nvim/colors/
+
+# Python bytecode, if a script here is ever imported rather than executed
+__pycache__/
