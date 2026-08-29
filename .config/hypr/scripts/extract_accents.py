@@ -67,20 +67,16 @@ PALETTE_DARK, PALETTE_LIGHT = "harddark16", "light16"
 
 # Minimum WCAG contrast ratio an accent must reach against the background.
 # wallust's own check leaves some colours near 2.0, which is readable for a UI
-# accent but marginal for text.
+# accent but marginal for text. Lifting to 3.0 costs little separation.
 #
-# 4.0 rather than WCAG AA's 4.5 for body text, because the cost is not uniform.
-# Lifting lightness on an already-desaturated wallpaper converges its colours
-# toward the same pale grey, so the gain in readability is paid for in colours
-# you can no longer tell apart. Measured going 3.0 -> 4.5: saturated wallpapers
-# lose nothing (29.0 -> 29.1 mean Lab separation on the current one, 38.0 ->
-# 37.9 on Northern Lights), but muted ones lose a third of their separation
-# (341402 14.4 -> 9.8, xeno2 24.1 -> 17.1). At 4.0 those same two give 11.4 and
-# 19.9 - most of the readability, far less of the damage.
-#
-# Tune with --min-contrast; --preview prints separation and contrast together so
-# both sides of the trade are visible.
-MIN_CONTRAST = 4.0
+# Tried 4.0 and it read as washed out - reverted. The measurement behind that
+# attempt is still worth keeping: raising this is not free on muted wallpapers,
+# where lifting lightness converges the colours toward the same pale grey. Going
+# 3.0 -> 4.5 costs saturated wallpapers nothing (29.0 -> 29.1 mean Lab
+# separation) but takes about a third off muted ones (341402 14.4 -> 9.8, xeno2
+# 24.1 -> 17.1). Use --min-contrast to try a value before changing this, and
+# read --preview's separation figure alongside the contrast one.
+MIN_CONTRAST = 3.0
 
 # Material You role -> ANSI slot, lifted from omarchy-auto-theme's
 # omarchy-quattro-colors.toml so the comparison is against what that project
