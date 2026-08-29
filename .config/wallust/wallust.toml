@@ -14,4 +14,4 @@ kitty.template = 'colors-kitty.conf'
 kitty.target  = '~/.config/kitty/wallust-colors.conf'
 
 nvim.template = 'colors-nvim.lua'
-nvim.target  = '~/.config/nvim/lua/wallust_base16.lua'
+nvim.target  = '~/.config/nvim-custom/lua/wallust_base16.lua'
