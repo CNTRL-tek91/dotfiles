@@ -14,10 +14,13 @@ local map = vim.keymap.set
 -- Exit insert mode without reaching for Escape.
 map("i", "jk", "<Esc>", { desc = "Exit insert mode" })
 
--- LazyVim's file explorer is neo-tree, bound to <leader>e (root) and
--- <leader>E (cwd). <C-n> is the toggle nvim-custom used for nvim-tree; kept
+-- LazyVim v16 has no file explorer until you enable one; lazyvim.json turns on
+-- the editor.snacks_explorer extra, which binds <leader>e (root) and
+-- <leader>E (cwd). <C-n> is the toggle nvim-custom used for nvim-tree, kept
 -- because it is muscle memory and LazyVim leaves <C-n> free.
-map("n", "<C-n>", "<cmd>Neotree toggle<cr>", { desc = "Explorer (toggle)" })
+map("n", "<C-n>", function()
+  Snacks.explorer({ cwd = LazyVim.root() })
+end, { desc = "Explorer (toggle)" })
 
 -- Close the current buffer without closing its window. LazyVim has this on
 -- <leader>bd; <A-w> is the nvim-custom binding, kept as a second way in.
