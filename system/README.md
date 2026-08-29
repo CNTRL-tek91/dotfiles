@@ -59,6 +59,38 @@ showed an unmuted, 100%-volume stream for the process despite the flag.
 it appears (short retry loop - it doesn't exist the instant the process
 starts).
 
+### `--screenshot` needs a real delay or it captures a black frame
+
+`--screenshot-delay` defaults to **5 frames** - at the default 30fps that's
+~0.17s of rendering, long before a scene of any weight has drawn anything.
+The capture comes out uniformly black, `wal` derives a black palette from
+it, and the whole desktop themes black under a wallpaper that isn't. This
+looks exactly like "re-theming silently stopped working," because every
+step *does* run and report success - the input image is just wrong.
+`scripts/wallpaperengine_launch.sh` passes `--screenshot-delay 300`.
+Measured on a 122MB mp4 wallpaper: the default wrote a 1-unique-colour
+black frame ~2s in; 300 frames wrote a real 175471-colour frame matching
+the wallpaper. The delay counts rendered frames, not wall-clock, so it
+stretches with a slow scene rather than firing regardless.
+
+Two guards sit alongside it, both worth keeping:
+
+- The retheme poll waits on a **60s deadline**, not the old 5s. The
+  screenshot is written exactly once, N frames in, and never updated - a
+  poll that expires before that write means the desktop never re-themes at
+  all, silently.
+- `shot_is_rendered()` gates on ImageMagick's `%k` unique-colour count
+  (`> 16`) before handing anything to `wal`, so a blank or half-written
+  frame leaves the previous palette alone instead of blackening the
+  desktop. A failed capture measures exactly 1; a good one measured
+  175471, so the two are not close. `identify` also errors on a truncated
+  PNG, which the same check catches for free.
+
+When touching this, verify against **actually rendered colours**
+(`~/.cache/wal/colors`, `~/.cache/wal/colors-kitty-readable.conf` - the
+file kitty really includes) rather than exit codes. Every failure mode
+here is silent-success shaped.
+
 ### Surviving reboot/sleep: which one comes back
 
 `linux-wallpaperengine` is just a process - a reboot, or even just logging
