@@ -99,6 +99,40 @@ plugin-only install. Verified the plugin actually loaded via
 `~/.config/OpenRGB/logs/` ("58 effects registered"), not just that the
 package installed.
 
+### Keeping an effect applied across closing the window, sleep, and reboot
+
+This controller has no onboard memory - OpenRGB's own UI shows "Saving Not
+Supported" for it - so any custom color or Effects Plugin animation (Rain,
+rainbow-wave, etc.) only exists while OpenRGB is actively streaming it live;
+the instant the process stops driving it, the keyboard falls back to its own
+firmware-default rainbow cycle. Three separate moments can cause that:
+
+- **Closing the OpenRGB window.** Fixed by `minimize_on_close: true` in
+  `~/.config/OpenRGB/OpenRGB.json` (was `false` - closing the window used to
+  fully quit the app, not minimize it to tray) plus `exec-once = ...
+  openrgb_autostart.sh` in `hosts/arch-cntrl.conf`, which keeps it running
+  from login onward.
+- **Suspend/resume.** `hypridle.conf`'s `after_sleep_cmd` re-pushes the saved
+  profile once the laptop wakes, since some USB rails power-cycle across
+  suspend even though the rest of the laptop resumes fine.
+- **A real reboot/shutdown.** Kills the OpenRGB process outright, which loses
+  power to the controller too. `openrgb_autostart.sh` starts OpenRGB back up
+  with `--profile last-state`, so whatever was saved comes right back instead
+  of sitting on firmware-default rainbow after boot.
+
+All three reload the same profile, named `last-state`, and none of them
+*capture* it automatically - only load it. That's deliberate, not a
+shortcut: `openrgb --save-profile` run from a separate CLI invocation
+re-detects the hardware from scratch rather than reading the already-running
+GUI process's in-memory state, and this controller can't be read back from
+(same root cause as "Saving Not Supported"), so a fresh detection gets back
+all-zero colors - confirmed by testing, not assumed. Saving "last-state" from
+*inside* the already-running OpenRGB GUI (File > Save Profile As >
+"last-state") avoids that, because it serializes the same process's live
+RGBController state instead of re-detecting. Re-save it (same menu, same
+name) any time you want a newly-picked effect to become the one that
+survives sleep/reboot - it won't happen on its own.
+
 ## `auto-cpufreq` masks `power-profiles-daemon`
 
 Installed and running as a systemd daemon on Laptop 2 (`sudo auto-cpufreq
