@@ -40,6 +40,15 @@ python3 ~/.config/hypr/scripts/kitty_readable_colors.py 2>/dev/null
 # Tell every running kitty to reload its config (picks up the new palette live).
 killall -SIGUSR1 kitty 2>/dev/null
 
+# Tell every running Neovim to re-read the palette. lushwal ships an fs_event
+# watcher on ~/.cache/wal/colors.json, but it is not something to rely on: this
+# pipeline rewrites that file twice per change, a single-file watch does not
+# survive the file being replaced, and the watcher only re-arms from the exit
+# callback of a subprocess it spawns - so one missed event leaves an open editor
+# stuck on the old colours for the rest of its session. Pushing the reload is
+# deterministic and costs nothing when no editor is open.
+~/.config/hypr/scripts/reload_nvim_theme.sh 2>/dev/null
+
 # Reload waybar colors via a STYLE-ONLY reload (reload_style_on_change), which does
 # NOT recreate the layer-shell surface, so XWayland windows (LibreWolf) survive.
 # A real content change is required (a bare `touch` only updates mtime, which waybar
