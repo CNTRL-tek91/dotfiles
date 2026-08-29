@@ -54,14 +54,37 @@ disown
 # 10 x 0.5s = 5s window was under that for anything but a trivially light
 # scene - a heavy one (e.g. a 122MB video wallpaper) is still loading well
 # past the 5s mark.
+#
+# "The file exists" is NOT the same as "the file holds a rendered frame".
+# Two ways it can exist and still be useless: it's mid-write (a truncated
+# PNG), or linux-wallpaperengine captured before the scene had drawn
+# anything and wrote a frame that's uniformly black. Feeding either to wal
+# is worse than doing nothing - a black image yields a black palette, which
+# is exactly how this surfaced (waybar and kitty went near-black on a
+# bright red wallpaper). So gate on the frame actually having content:
+# `%k` is ImageMagick's unique-colour count, which cleanly separates the
+# two cases - a failed capture measured exactly 1, a good capture of the
+# same wallpaper measured 175471. `identify` also fails outright on a
+# half-written PNG, which the same check catches for free.
+shot_is_rendered() {
+  local colors
+  colors=$(magick identify -format "%k" "$1" 2>/dev/null) || return 1
+  [ -n "$colors" ] && [ "$colors" -gt 16 ] 2>/dev/null
+}
+
 (
   deadline=$(( SECONDS + 60 ))
   while [ "$SECONDS" -lt "$deadline" ]; do
-    if [ -f "$SHOT" ]; then
+    if [ -f "$SHOT" ] && shot_is_rendered "$SHOT"; then
       ~/.config/hypr/scripts/wallpaperengine_retheme.sh "$SHOT"
       exit 0
     fi
     sleep 0.5
   done
+  # Deliberately silent about *theming* on the way out: leaving the previous
+  # palette in place is the correct degraded state, not something to fix by
+  # theming from a bad frame anyway.
+  notify-send -a "Wallpaper" -u low -t 2000 \
+    "Live wallpaper applied" "Couldn't read a frame to re-theme from; colors unchanged"
 ) &
 disown
