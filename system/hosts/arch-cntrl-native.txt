@@ -48,6 +48,7 @@ inxi
 jq
 kitty
 kvantum
+lazygit
 lf
 libpulse
 librewolf
