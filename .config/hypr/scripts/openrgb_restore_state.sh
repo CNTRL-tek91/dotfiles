@@ -1,15 +1,29 @@
 #!/usr/bin/env bash
-# Reapplies the "last-state" profile after waking from suspend. This
-# controller has no onboard memory (OpenRGB's own UI shows "Saving Not
-# Supported" for it), and some USB rails power-cycle across suspend even
-# though the rest of the laptop resumes fine - either way, the safe move is
-# to just always re-push the saved profile after resume rather than assume
-# the keyboard remembered it on its own.
+# Re-applies the "last-state" profile after waking from suspend.
 #
-# "last-state" is saved manually, from inside OpenRGB itself (File > Save
-# Profile As > "last-state"), not captured automatically by a script here -
-# see openrgb_autostart.sh for why: this hardware can't be read back from,
-# so an external process has no way to discover what's currently showing.
+# Why anything is needed at all: this controller has no onboard memory
+# (OpenRGB's own UI shows "Saving Not Supported" for it), and some USB rails
+# power-cycle across suspend even though the rest of the laptop resumes fine.
+#
+# "last-state" is saved manually from inside OpenRGB (Profiles > Save Profile),
+# not captured by a script - this hardware cannot be read back from, so an
+# external process has no way to discover what is currently showing.
+#
+# The profile carries the Effects Plugin's state too, not just static colors:
+# the plugin hooks OpenRGB's own profile save/load (OnProfileSave /
+# OnProfileAboutToLoad) and writes a "plugins" section into the profile JSON,
+# with "AutoStart": true per effect. So restoring the profile restores the
+# running effect - including a Layers stack - and not merely a colour
+# snapshot. Anything built in the Effects tab must be re-saved over
+# "last-state" to survive, or the profile still holds the previous effect.
+#
+# This drives the ALREADY RUNNING instance through its tray menu rather than
+# running `openrgb --profile last-state`. That command starts a SECOND
+# OpenRGB, which then fights the first one over the same USB controller - the
+# exact failure that had six of them stacked up making the keyboard glitch.
 pgrep -x openrgb >/dev/null || exit 0
-sleep 1
-openrgb --profile last-state >/dev/null 2>&1
+
+# Give the USB rail a moment to settle before touching the device.
+sleep 2
+
+exec "$HOME/.config/hypr/scripts/openrgb_tray.sh" "last-state"
