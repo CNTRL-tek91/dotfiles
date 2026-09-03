@@ -250,6 +250,11 @@ Committed hosts: `archlinux.conf` (Laptop 1), `arch-cntrl.conf` (Laptop 2).
 ```sh
 git clone git@github.com:CNTRL-tek91/dotfiles.git ~/.dotfiles
 
+# Register the wal-reload clean filter. .gitattributes asks for it, but the
+# filter body lives in .git/config, which is NOT cloned - without this, every
+# wallpaper change leaves waybar's style.css showing as modified forever.
+git -C ~/.dotfiles config filter.wal-marker.clean "sed '/^\/\* wal-reload /d'"
+
 # Packages — see system/README.md for what to exclude on non-ROG hardware
 pacman -S --needed - < ~/.dotfiles/system/pkglist-native.txt
 paru   -S --needed - < ~/.dotfiles/system/pkglist-aur.txt
