@@ -258,10 +258,17 @@
     "interval": 2,
     "on-click": "~/.config/hypr/scripts/cpufreq_picker.sh",
   },
+  // Guarded: a bare `openrgb` here starts a NEW instance on every click.
+  // OpenRGB runs --startminimized with no window (tray only), so a click
+  // looks like it did nothing and invites clicking again - six of them ended
+  // up driving the same USB controller with conflicting state, which shows
+  // up as the keyboard glitching. There is no window to raise instead, so
+  // the click only starts OpenRGB when it is genuinely not running; open the
+  // existing one from its tray icon.
   "custom/rgb": {
     "format": "󰟖",
     "tooltip": false,
-    "on-click": "openrgb",
+    "on-click": "pgrep -x openrgb >/dev/null || openrgb",
   },
   "custom/wallpaperengine": {
     "format": "󰸉",
