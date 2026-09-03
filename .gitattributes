@@ -1,2 +1,18 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# The theming pipeline rewrites a self-replacing "/* wal-reload <ns> */" line at
+# the end of waybar's stylesheet on every wallpaper change - waybar's
+# reload_style_on_change needs a real content change, not just a new mtime, to do
+# a style-only reload (a full reload would recreate the layer-shell surface and
+# take XWayland windows down with it). That left style.css permanently dirty.
+#
+# Strip the marker on the way INTO git so the tracked content stays stable. There
+# is deliberately no smudge filter: the working copy keeps its marker, which is
+# the whole point of it existing. .gitignore is not usable here - the file is
+# tracked and holds 180+ lines of real styling.
+#
+# The filter must be registered locally once (it lives in .git/config, which is
+# not cloned) - see SETUP.md:
+#   git config filter.wal-marker.clean "sed '/^\\/\\* wal-reload /d'"
+.config/waybar/style.css filter=wal-marker
