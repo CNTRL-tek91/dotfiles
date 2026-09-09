@@ -1,4 +1,24 @@
 return {
+  -- Pin the debug adapters explicitly.
+  --
+  -- LazyVim's lang.python extra pulls in nvim-dap-python once dap.core is on,
+  -- but the adapter it drives - debugpy - is a separate Mason package, and it
+  -- was NOT installed here: nvim-dap-python was present with nothing behind it,
+  -- so <leader>d on a Python file would have failed at the point of use.
+  -- codelldb (C/C++/Rust) was already installed; it is listed so both adapters
+  -- are declared in one place rather than one being implicit.
+  {
+    "mason-org/mason.nvim",
+    opts = function(_, opts)
+      opts.ensure_installed = opts.ensure_installed or {}
+      vim.list_extend(opts.ensure_installed, {
+        "debugpy",
+        "codelldb",
+      })
+      return opts
+    end,
+  },
+
   -- The ruff settings carried over from nvim-custom: line-length 79 (matching
   -- the colorcolumn in config/options.lua), single quotes, and a wider rule
   -- selection than ruff's default E/F.
