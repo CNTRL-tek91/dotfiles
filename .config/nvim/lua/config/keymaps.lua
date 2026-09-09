@@ -33,3 +33,18 @@ end, { desc = "Delete buffer" })
 map("n", "<C-\\>", function()
   Snacks.terminal(nil, { cwd = LazyVim.root() })
 end, { desc = "Terminal (root dir)" })
+
+-- Run the current file. These sit in the <leader>o (overseer) group because
+-- that is where "make something happen with this code" already lives, and
+-- because the obvious <leader>cr / <leader>cR are both taken - LazyVim binds
+-- them to LSP rename and rename-file, and inc-rename rebinds <leader>cr again.
+-- Overseer keeps <leader>oo / <leader>ot / <leader>ow; or/oR/ob are free.
+local function run(opts)
+  return function()
+    require("util.run").run(opts)
+  end
+end
+
+map("n", "<leader>or", run(), { desc = "Run current file" })
+map("n", "<leader>oR", run({ prompt = true }), { desc = "Run current file (with args)" })
+map("n", "<leader>ob", run({ compile_only = true }), { desc = "Build current file (no run)" })
