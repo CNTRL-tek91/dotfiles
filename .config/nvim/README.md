@@ -84,6 +84,62 @@ explorer toggle, `<A-w>` buffer delete, `<C-\>` terminal. Window navigation
 `<C-h/j/k/l>`, resizing `<C-Up/Down/Left/Right>` and buffer cycling
 `<S-h>/<S-l>` are LazyVim defaults on the same keys they always were.
 
+## Running code — C/C++ and Python
+
+`<leader>or` runs the current file, `<leader>oR` prompts for arguments first,
+`<leader>ob` builds without running (C/C++ only). Output opens in a float that
+waits for a keypress, so a program that prints and exits does not flash past.
+
+These sit in the `<leader>o` overseer group because `<leader>cr` and
+`<leader>cR` are both taken — LazyVim binds them to LSP rename and rename-file,
+and inc-rename rebinds `<leader>cr` again. Overseer's own `oo`/`ot`/`ow` are
+untouched; use `<leader>oo` for real project builds, which Overseer
+auto-detects (make, cmake, npm).
+
+Logic lives in `lua/util/run.lua`, keymaps in `lua/config/keymaps.lua`.
+
+| Language | What runs |
+| --- | --- |
+| Python | venv interpreter if there is one, else `python3` |
+| C++ | `g++ -std=c++23 -Wall -Wextra -Wpedantic -g -O0`, then the binary |
+| C | `gcc -std=c23` with the same flags |
+
+Binaries go to `~/.cache/nvim/run/`, never beside the source, so running a file
+does not leave an untracked binary in a git worktree. `-g -O0` matches what
+codelldb attaches to, so a file you just ran is already debuggable.
+
+### Python: the interpreter is chosen, not assumed
+
+`run.lua` resolves, in order: `$VIRTUAL_ENV`, then a project-local `.venv/` or
+`venv/`, then system `python3`.
+
+That order matters on Arch. The system Python is marked externally managed
+(PEP 668), so `pip install` outside a venv is **refused** — every real library
+will live in a venv, and running against `/usr/bin/python3` would not see any
+of them. `uv` is installed and is the fast way to make one:
+
+```sh
+uv venv                     # creates .venv/ in the project
+uv pip install numpy torch  # into that venv
+```
+
+Open Neovim from that directory and `<leader>or` picks `.venv/bin/python`
+automatically — no activation needed.
+
+### What is already wired
+
+Verified working, no further installs needed for either language:
+
+| | C/C++ | Python |
+| --- | --- | --- |
+| LSP | clangd (Mason) | basedpyright + ruff (Mason) |
+| Debug | codelldb | debugpy |
+| Compiler/runtime | gcc/g++ 16, make, cmake, ninja, gdb | python3 |
+| Lint/format | clangd's built-in clang-tidy + clang-format | ruff |
+
+clangd runs with `--clang-tidy` and formats through its own bundled
+clang-format, so the `clang` package is **not** required for either.
+
 ## Changing what's installed
 
 `:LazyExtras` toggles extras; it edits `lazyvim.json`. `:Lazy` manages plugins.
