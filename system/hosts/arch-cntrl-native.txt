@@ -95,6 +95,7 @@ pkgfile
 playerctl
 polkit-kde-agent
 power-profiles-daemon
+python-debugpy
 python-matplotlib
 python-pandas
 python-pip
