@@ -204,7 +204,7 @@
     "format-disconnected": "󰖪",
     "format-linked": "󰈁",
     "tooltip": false,
-    "on-click": "pgrep -x rofi &>/dev/null && notify-send rofi || networkmanager_dmenu",
+    "on-click": "~/.config/hypr/scripts/network_menu.sh",
   },
   "network#speed": {
     "format": " {bandwidthDownBits} ",
@@ -214,7 +214,7 @@
     "tooltip-format-ethernet": "{ifname} 󰈀 \n{ipaddr} | {frequency} MHz{icon} ",
     "tooltip-format-disconnected": "Not Connected to any type of Network",
     "tooltip": true,
-    "on-click": "pgrep -x rofi &>/dev/null && notify-send rofi || networkmanager_dmenu",
+    "on-click": "~/.config/hypr/scripts/network_menu.sh",
   },
   "bluetooth": {
     "format-on": "",
