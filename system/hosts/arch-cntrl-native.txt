@@ -23,6 +23,7 @@ dunst
 efibootmgr
 evtest
 fastfetch
+fd
 ffmpegthumbnailer
 firefox
 fish
