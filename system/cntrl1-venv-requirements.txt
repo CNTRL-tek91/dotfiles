@@ -222,6 +222,7 @@ srsly==2.5.3
 stack-data==0.6.3
 starlette==1.6.0
 sympy==1.14.0
+tabulate==0.10.0
 tensorboard-data-server==0.7.2
 tensorboard==2.21.0
 terminado==0.18.1
