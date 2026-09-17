@@ -1,7 +1,13 @@
 # cntrl1-venv — shared ML/AI environment
 
 One shared venv at `~/.venvs/cntrl1-venv`, deliberately outside any project
-directory. Python 3.14.7, 258 packages, ~7.1 GB.
+directory. Python 3.14.7, 259 packages, ~7.1 GB.
+
+pip is one of those 259, added deliberately. `uv venv` does not install it, so
+before that a bare `pip install` inside an activated venv fell through to
+`/usr/bin/pip` and targeted the system Python - which PEP 668 then refused.
+`uv pip install` remains the faster path and needs no activation; pip is there
+for when a README or a tool shells out to `pip` and expects it to exist.
 
 ## Recreating it
 
