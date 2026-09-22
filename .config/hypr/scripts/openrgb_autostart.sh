@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Login/boot autostart for OpenRGB. Starts it minimized AND immediately loads
-# the "last-state" profile saved by openrgb_save_state.sh, so whatever effect
+# the "cntrl" profile saved by openrgb_save_state.sh, so whatever effect
 # (Rain, a custom color, the Effects Plugin's rainbow-wave, etc.) was active
 # when the machine last went to sleep/shut down comes right back - otherwise
 # a fresh start leaves the keyboard on its own firmware-default rainbow,
@@ -16,10 +16,22 @@
 # doesn't. Rather than chase a one-off, transient race further, just make
 # sure a failure here doesn't cost the whole session's keyboard lighting.
 for _ in 1 2 3; do
-  openrgb --startminimized --profile last-state &
+  openrgb --startminimized --profile cntrl &
   pid=$!
   sleep 3
   if kill -0 "$pid" 2>/dev/null; then
+    # `--profile` on the command line restores the saved COLOURS but does not
+    # make the Effects plugin restore its effects - verified against OpenRGB
+    # 1.0.32 / effects plugin 1.0.2: the plugin loads, registers its 58
+    # effects, the profile validates, and nothing is created. Loading the SAME
+    # profile again at runtime does create and start it.
+    #
+    # So re-load it through the tray menu once OpenRGB is actually up. That is
+    # the mechanism openrgb_restore_state.sh already uses on resume; here it
+    # closes the same gap at boot. Without this the keyboard comes back with
+    # static colours and no effect running.
+    sleep 6
+    "$HOME/.config/hypr/scripts/openrgb_restore_state.sh" >/dev/null 2>&1
     exit 0
   fi
 done

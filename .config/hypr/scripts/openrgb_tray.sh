@@ -2,7 +2,7 @@
 # Trigger an entry in OpenRGB's tray menu on the ALREADY RUNNING instance.
 #
 #   openrgb_tray.sh "Show/Hide"        # click it
-#   openrgb_tray.sh --find "last-state" # print its id, change nothing
+#   openrgb_tray.sh --find "cntrl" # print its id, change nothing
 #
 # Why this exists: OpenRGB is not single-instance, so anything that shells out
 # to `openrgb` again starts a second copy, and two copies writing to the same

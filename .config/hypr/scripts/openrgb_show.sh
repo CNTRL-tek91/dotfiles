@@ -29,7 +29,7 @@ fi
 # Not running at all - start it the same way autostart does, so the saved
 # lighting comes back with it.
 if ! pgrep -x openrgb >/dev/null; then
-  openrgb --startminimized --profile last-state >/dev/null 2>&1 &
+  openrgb --startminimized --profile cntrl >/dev/null 2>&1 &
   exit 0
 fi
 
