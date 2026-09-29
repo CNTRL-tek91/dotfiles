@@ -203,6 +203,11 @@
     "format-ethernet": "󰈁",
     "format-disconnected": "󰖪",
     "format-linked": "󰈁",
+    // Without format-disabled, turning the WiFi radio off made the icon VANISH
+    // and become unclickable - leaving no way to re-enable WiFi from the bar.
+    // waybar falls back to "format": "{icon}" for the disabled state, and
+    // format-icons has no "disabled" key, so it rendered as nothing at all.
+    "format-disabled": "󰤭",
     "tooltip": false,
     "on-click": "~/.config/hypr/scripts/network_menu.sh",
   },
