@@ -141,6 +141,33 @@ return {
           vim.cmd("colorscheme tokyonight")
         end
 
+        -- Enforce a readable contrast floor on groups that paint a background.
+        -- The wallpaper palette sometimes lands a background at a mid-tone
+        -- lightness, where BOTH the light and dark foregrounds fail:
+        -- LspReferenceText (what the illuminate extra uses for the symbol under
+        -- the cursor) measured 3.68 with its dark fg and only 2.96 with the
+        -- light one. See lua/util/contrast.lua for the fix.
+        --
+        -- On ColorScheme rather than once, so it survives every wallpaper
+        -- change - the theming pipeline pushes a lushwal reload into running
+        -- editors and that re-fires this.
+        --
+        -- schedule() because transparent.nvim also hooks ColorScheme to clear
+        -- backgrounds; deferring means we read the groups as they finally are
+        -- rather than mid-flight.
+        local function contrast_floor()
+          vim.schedule(function()
+            pcall(function()
+              require("util.contrast").apply()
+            end)
+          end)
+        end
+        vim.api.nvim_create_autocmd("ColorScheme", {
+          group = vim.api.nvim_create_augroup("contrast_floor", { clear = true }),
+          callback = contrast_floor,
+        })
+        contrast_floor()
+
         -- Registered only after the startup apply, so the initial theme is not
         -- written back - that keeps lushwal the default on a fresh install
         -- instead of persisting whatever the first fallback happened to be.
