@@ -91,22 +91,46 @@ zstyle ':completion:*' menu no
 zstyle ':fzf-tab:complete:cd:*' fzf-preview 'lsd --color=always --icon=always $realpath'
 
 # Functions
+# Auto-activate a project venv on entering its directory, and deactivate on
+# leaving - but only ever a venv THIS shell activated.
+#
+# Two bugs this replaces, both of which fired on an ordinary `cd`:
+#
+#  1. VIRTUAL_ENV is frequently INHERITED rather than activated here. Neovim
+#     sets it (venv-selector, and lua/util/run.lua resolves it too), so any
+#     terminal opened inside nvim starts with VIRTUAL_ENV already set - but
+#     WITHOUT the `deactivate` function, which only exists once bin/activate
+#     has been sourced in this shell. The old code called it unconditionally,
+#     printing "zsh: command not found: deactivate" after every cd.
+#
+#  2. The old test compared $PWD against `dirname $VIRTUAL_ENV`, which is wrong
+#     whenever the venv lives outside its project. For ~/.venvs/cntrl1-venv the
+#     parent is ~/.venvs, so nothing except ~/.venvs/* counted as "inside the
+#     venv" and it tried to deactivate in every other directory on the machine.
+#     Remembering the directory we activated FROM is what that test wanted.
 detect_virtualenv() {
+  local parent
   if [[ -z "$VIRTUAL_ENV" ]] ; then
-    # If env folder is found, activate the virtualenv
+    # Entering a project with its own venv - activate it and remember where.
     if [[ -d ./venv ]] ; then
+      _ZSH_VENV_ROOT="$PWD"
       source ./venv/bin/activate
     elif [[ -d ./.venv ]] ; then
+      _ZSH_VENV_ROOT="$PWD"
       source ./.venv/bin/activate
     fi
-  else
-    # Check if the current folder belongs to the earlier VIRTUAL_ENV folder
-    # If not, deactivate the virtual environment
-    parentdir="$(dirname "$VIRTUAL_ENV")"
-    if [[ "$PWD"/ != "$parentdir"/* ]] ; then
+  elif [[ -n "$_ZSH_VENV_ROOT" ]] ; then
+    # We activated it, so we may deactivate it - once we are outside that tree.
+    # The function check is belt-and-braces: nothing should clear it while
+    # _ZSH_VENV_ROOT is still set, but an inherited-then-overwritten env would.
+    if [[ "$PWD"/ != "$_ZSH_VENV_ROOT"/* ]] && (( $+functions[deactivate] )) ; then
       deactivate
+      unset _ZSH_VENV_ROOT
     fi
   fi
+  # VIRTUAL_ENV set with no _ZSH_VENV_ROOT means it was inherited (from nvim,
+  # or an explicit `source .../activate`). Leave it alone - it is not ours to
+  # undo, and `deactivate` may not even exist.
 }
 
 ddac() {
