@@ -343,24 +343,47 @@
     },
     "modules": ["battery", "power-profiles-daemon"],
   },
+  // Battery. This machine is BAT1 with an ACAD adapter, not the BAT0/AC that
+  // waybar probes for first, so both are named explicitly - left to
+  // autodetect it can bind to the wrong supply or none at all.
+  //
+  // Charging uses the Nerd Font battery-charging glyphs rather than a separate
+  // bolt character: those glyphs are the battery outline with the bolt inside
+  // it, which is the overlay look asked for rather than two icons side by side.
+  // format-icons is an object so each status gets its own ramp.
+  //
+  // Ten steps instead of six: with six, a 10% and a 25% battery drew the same
+  // glyph, which defeats the point of a fill indicator.
   "battery": {
+    "bat": "BAT1",
+    "adapter": "ACAD",
+    "interval": 30,
     "states": {
-      "good": 95,
       "warning": 30,
       "critical": 15
     },
     "format": "{icon}",
-    "format-charging": "<b>{icon} </b>",
-    "format-full": "<span color='#82A55F'><b>{icon}</b></span>",
-    "format-icons": [
-      "󰁻",
-      "󰁼",
-      "󰁾",
-      "󰂀",
-      "󰂂",
-      "󰁹"
-    ],
-    "tooltip-format": "{timeTo} {capacity} % | {power} W"
+    "format-charging": "{icon}",
+    "format-plugged": "{icon}",
+    "format-full": "{icon}",
+    "format-icons": {
+      "charging": [
+        "󰢜", "󰂆", "󰂇", "󰂈", "󰢝",
+        "󰂉", "󰢞", "󰂊", "󰂋", "󰂅"
+      ],
+      "default": [
+        "󰁺", "󰁻", "󰁼", "󰁽", "󰁾",
+        "󰁿", "󰂀", "󰂁", "󰂂", "󰁹"
+      ]
+    },
+    // waybar composes "tooltip-format-" + status at runtime, so these resolve
+    // per state. There is no {status} placeholder, which is why "On battery"
+    // and "Charging" have to be written out per variant rather than templated.
+    "tooltip-format": "{capacity}% - {timeTo}",
+    "tooltip-format-discharging": "{capacity}% - On battery\n{timeTo}\nDraw: {power} W",
+    "tooltip-format-charging": "{capacity}% - Charging (plugged in)\n{timeTo}\nInput: {power} W",
+    "tooltip-format-plugged": "{capacity}% - Plugged in, not charging",
+    "tooltip-format-full": "{capacity}% - Full (plugged in)"
   },
   "power-profiles-daemon": {
     "format": "{icon}",
