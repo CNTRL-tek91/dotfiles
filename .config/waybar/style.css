@@ -183,3 +183,37 @@ tooltip label {
 #battery {
   padding: 0px 8px;
 }
+
+/* Low-battery states. waybar sets .warning and .critical on #battery from the
+ * "states" thresholds in modules.jsonc (30% and 15%), so these need no script.
+ *
+ * Colours are hard-coded rather than taken from the wallpaster palette on
+ * purpose: this is the one indicator that must stay legible as a warning even
+ * when the wallpaper happens to theme everything a similar hue. A battery about
+ * to die should not blend into the bar.
+ *
+ * .charging is excluded from both - a battery at 10% that is plugged in is not
+ * a problem, and flashing red while it recovers is just noise. */
+#battery.warning:not(.charging) {
+  color: #e6b450;
+}
+
+#battery.critical:not(.charging) {
+  color: #ff5f5f;
+}
+
+/* Only the critical state animates, and only on battery. Blinking is reserved
+ * for "act now" rather than used as decoration. */
+@keyframes battery-blink {
+  to {
+    color: #ffffff;
+  }
+}
+
+#battery.critical:not(.charging) {
+  animation-name: battery-blink;
+  animation-duration: 1s;
+  animation-timing-function: steps(2, end);
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}
