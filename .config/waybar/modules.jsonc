@@ -114,7 +114,14 @@
   },
   "group/control-center": {
     "orientation": "inherit",
-    "modules": ["hyprland/language", "group/audio", "group/connection"],
+    // "battery" directly, not the pre-existing "group/power" wrapper, which
+    // pairs it with power-profiles-daemon - and that daemon is MASKED on this
+    // machine (auto-cpufreq drives the CPU instead), so the group would have
+    // rendered a permanently dead second icon next to the battery.
+    //
+    // Last in the list so it sits beside the network and bluetooth icons,
+    // which is where a battery is looked for.
+    "modules": ["hyprland/language", "group/audio", "group/connection", "battery"],
   },
   "hyprland/language": {
     "format": "{}",
