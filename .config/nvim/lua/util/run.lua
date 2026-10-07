@@ -92,10 +92,25 @@ function M.run(opts)
   end
 
   local wrapped = ("%s; printf '\\n[exit %%s] press any key to close' $?; read -n1 -s"):format(cmd)
+  -- Bottom split rather than a float. A float covers the code it came from; a
+  -- split keeps the buffer and its output on screen together, which is what
+  -- matters when the output is a traceback pointing at a line you need to read.
+  --
+  -- No winbar or border is set here on purpose. The edgy extra claims any
+  -- snacks_terminal whose position is "bottom" and draws its own titled header
+  -- ("%{b:snacks_terminal.id}: %{b:term_title}"), which is the separator
+  -- between code and output - and it overrides anything set here anyway, so a
+  -- custom winbar would be dead config. Verified: the window came back with
+  -- edgy_winbar() installed, not the value passed in.
   Snacks.terminal({ "bash", "-lc", wrapped }, {
     cwd = vim.fn.fnamemodify(file, ":h"),
     interactive = true,
-    win = { position = "float", title = " run: " .. vim.fn.fnamemodify(file, ":t") .. " ", title_pos = "center" },
+    win = {
+      position = "bottom",
+      height = 0.3,
+      title = " run: " .. vim.fn.fnamemodify(file, ":t") .. " ",
+      title_pos = "center",
+    },
   })
 end
 
