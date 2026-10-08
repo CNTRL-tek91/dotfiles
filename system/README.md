@@ -427,3 +427,38 @@ it is peer-to-peer, nothing holds the data in between. It syncs, it does not
 merge: editing one file on both while disconnected leaves a `*.sync-conflict-*`
 copy alongside the original. Never add `~/.config`, `~/.cache`, browser profiles
 or anything with a live SQLite database.
+
+## LibreWolf: Google as the default search engine
+
+```sh
+sudo install -Dm644 ~/.dotfiles/system/librewolf-policies.json \
+  /etc/librewolf/policies/policies.json
+```
+
+Then, with LibreWolf **closed**, clear the stale policy marker:
+
+```sh
+sed -i '/browser.policies.runOncePerModification.setDefaultSearchEngine/d' \
+  ~/.librewolf/custom.default-default/prefs.js
+```
+
+Three things make this less obvious than it looks:
+
+**LibreWolf ships without Google.** The profile's engine store held only
+DuckDuckGo No-AI, Mojeek, Startpage and Wikipedia, with `defaultEngineId` empty.
+So no pref could select it - the engine has to be *added* first, which only the
+`SearchEngines` policy can do.
+
+**`browser.search.defaultenginename` is inert.** It has not controlled the
+default since the search service moved to `search.json.mozlz4`. Setting it looks
+like it should work and does nothing.
+
+**`SearchEngines.Default` applies only once per value change.** The policy
+engine records it in `browser.policies.runOncePerModification.
+setDefaultSearchEngine`, and this profile already had that set to `Google` from
+an earlier attempt - so re-adding the same policy value would be ignored.
+Deleting the pref is what lets it apply again.
+
+Not `/usr/lib/librewolf/distribution/policies.json`: that file is owned by the
+`librewolf-bin` package and is replaced on every upgrade. `/etc/librewolf/policies/`
+survives upgrades.

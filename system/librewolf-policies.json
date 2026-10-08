@@ -1,0 +1,18 @@
+{
+  "policies": {
+    "SearchEngines": {
+      "Add": [
+        {
+          "Name": "Google",
+          "URLTemplate": "https://www.google.com/search?q={searchTerms}",
+          "Method": "GET",
+          "IconURL": "https://www.google.com/favicon.ico",
+          "Alias": "g",
+          "Description": "Google Search",
+          "SuggestURLTemplate": "https://www.google.com/complete/search?client=firefox&q={searchTerms}"
+        }
+      ],
+      "Default": "Google"
+    }
+  }
+}
