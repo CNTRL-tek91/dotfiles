@@ -36,6 +36,16 @@ return {
     build = ":UpdateRemotePlugins",
     dependencies = { "3rd/image.nvim" },
     init = function()
+      -- Jupyter writes a kernel connection file into its runtime dir, and
+      -- nothing creates that directory - jupyter_client expects it to exist.
+      -- On this machine ~/.local/share/jupyter existed but runtime/ inside it
+      -- did not, and MoltenInit failed with
+      --   "Could not initialize kernel, Caused by: Errno 2 No such file"
+      -- which names no path and so points nowhere useful. Created here rather
+      -- than documented as a setup step, because a missing directory is not
+      -- worth a manual instruction that can be skipped on the next machine.
+      vim.fn.mkdir(vim.fn.expand("~/.local/share/jupyter/runtime"), "p")
+
       -- Must be set BEFORE the plugin loads; molten reads these at startup.
       vim.g.molten_image_provider = "image.nvim"
       vim.g.molten_output_win_max_height = 20
