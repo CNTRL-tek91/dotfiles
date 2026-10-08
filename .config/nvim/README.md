@@ -140,6 +140,40 @@ Verified working, no further installs needed for either language:
 clangd runs with `--clang-tidy` and formats through its own bundled
 clang-format, so the `clang` package is **not** required for either.
 
+## Notebooks (molten + jupytext)
+
+`<leader>j` is the notebook group. Open a `.ipynb` and jupytext converts it to
+a markdown buffer on the way in and back to JSON on write, so LSP, treesitter
+and normal motions all work. `<leader>ji` starts a kernel, `<leader>jl`
+evaluates a line, `<leader>jv` evaluates a selection; plots render inline
+through image.nvim's kitty backend.
+
+Two prerequisites are NOT installed by lazy.nvim and have to exist for this to
+work at all:
+
+```sh
+# 1. The python provider needs pynvim + jupyter_client importable. Arch's
+#    system python cannot have them (PEP 668), so they live in cntrl1-venv and
+#    config/options.lua points python3_host_prog at it.
+VIRTUAL_ENV=~/.venvs/cntrl1-venv uv pip install pynvim jupytext jupyter_client
+
+# 2. jupytext.nvim shells out to a BARE `jupytext` command, so the venv's
+#    binary has to be reachable on PATH.
+ln -s ~/.venvs/cntrl1-venv/bin/jupytext ~/.local/bin/jupytext
+```
+
+And molten is a **remote plugin**: its commands are generated, not declared.
+`:UpdateRemotePlugins` only scans plugins that are currently loaded, and molten
+is lazy-loaded on its keys - so running it on a cold start registers nothing
+and leaves a 71-byte manifest. Force the plugin in first:
+
+```sh
+nvim --headless "+Lazy! load molten-nvim" "+UpdateRemotePlugins" "+qa"
+```
+
+A correct manifest is ~4 KB and `grep -c Molten ~/.local/share/nvim/rplugin.vim`
+returns around 42.
+
 ## Changing what's installed
 
 `:LazyExtras` toggles extras; it edits `lazyvim.json`. `:Lazy` manages plugins.

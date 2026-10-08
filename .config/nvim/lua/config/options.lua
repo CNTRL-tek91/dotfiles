@@ -43,3 +43,20 @@ vim.filetype.add({
     ["http"] = "http",
   },
 })
+
+-- Pin Neovim's Python provider to the shared venv.
+--
+-- molten-nvim is a REMOTE plugin: it runs inside a Python process that Neovim
+-- starts, and that process needs pynvim plus jupyter_client importable. The
+-- system Python cannot have them - Arch marks it externally managed (PEP 668)
+-- so pip refuses - so the provider has to point at a venv that does.
+--
+-- cntrl1-venv is that venv: it holds pynvim, jupytext, jupyter_client and a
+-- registered python3 jupyter kernel. Hardcoded rather than resolved per
+-- project, because the provider is process-wide and set once at startup -
+-- there is no per-buffer version of it, and following $VIRTUAL_ENV would break
+-- molten in any project whose venv lacks pynvim.
+local host_python = vim.fn.expand("~/.venvs/cntrl1-venv/bin/python")
+if vim.uv.fs_stat(host_python) then
+  vim.g.python3_host_prog = host_python
+end
