@@ -100,4 +100,84 @@ function M.ensure_valid(path)
   end
 end
 
+-- Find the fenced code cell the cursor sits in.
+--
+-- Done by scanning for ``` fences rather than with treesitter. A notebook in
+-- jupytext's markdown style has exactly one level of fencing and no nesting,
+-- so a scan is both sufficient and immune to the parser not having attached
+-- yet - and it works identically whether or not treesitter has caught up.
+--
+---@param buf integer
+---@param lnum integer 1-based cursor line
+---@return integer|nil first 1-based first line of cell content
+---@return integer|nil last  1-based last line of cell content
+---@return string|nil  lang  the fence's info string, e.g. "python"
+function M.cell_range(buf, lnum)
+  local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
+  local open, lang = nil, nil
+  for i, line in ipairs(lines) do
+    local info = line:match("^%s*```(.*)$")
+    if info ~= nil then
+      if open == nil then
+        open, lang = i, vim.trim(info)
+      else
+        -- The cursor counts as inside the cell when it is on either fence,
+        -- so running from the ```python line does what you meant.
+        if lnum >= open and lnum <= i then
+          return open + 1, i - 1, lang
+        end
+        open, lang = nil, nil
+      end
+    end
+  end
+  return nil, nil, nil
+end
+
+-- Evaluate the whole cell under the cursor.
+--
+-- molten has no concept of a markdown cell: MoltenEvaluateLine does one line
+-- and MoltenReevaluateCell only works on a span molten already knows about,
+-- so neither runs a cell you just typed. Passing the fence-delimited range to
+-- MoltenEvaluateRange both defines the cell and runs it.
+--
+-- MoltenEvaluateRange is a pynvim *function*, not a command, so it is called
+-- rather than :executed, and its line arguments are 1-based inclusive (it
+-- subtracts 1 internally).
+function M.run_cell()
+  local lnum = vim.api.nvim_win_get_cursor(0)[1]
+  local first, last, lang = M.cell_range(0, lnum)
+
+  if not first then
+    vim.notify("Not inside a ``` code cell", vim.log.levels.WARN, { title = "notebook" })
+    return
+  end
+  if last < first then
+    vim.notify("Cell is empty", vim.log.levels.WARN, { title = "notebook" })
+    return
+  end
+  if lang ~= "" and lang ~= "python" then
+    vim.notify(
+      ("Cell is a %s cell, not python - running it anyway under the active kernel"):format(lang),
+      vim.log.levels.WARN,
+      { title = "notebook" }
+    )
+  end
+
+  local ok, err = pcall(vim.fn.MoltenEvaluateRange, first, last)
+  if not ok then
+    -- Overwhelmingly this is "no kernel": MoltenInit has to run once per
+    -- buffer before anything can be evaluated, and the raw error does not say
+    -- so.
+    vim.notify(
+      ("Could not run cell (lines %d-%d).\nRun <leader>ji to start a kernel first.\n\n%s"):format(
+        first,
+        last,
+        tostring(err)
+      ),
+      vim.log.levels.ERROR,
+      { title = "notebook" }
+    )
+  end
+end
+
 return M

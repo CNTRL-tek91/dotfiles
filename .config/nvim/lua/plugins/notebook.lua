@@ -77,6 +77,13 @@ return {
       { "<leader>ji", "<cmd>MoltenInit<cr>", desc = "Notebook: init kernel" },
       { "<leader>je", "<cmd>MoltenEvaluateOperator<cr>", desc = "Notebook: evaluate operator" },
       { "<leader>jl", "<cmd>MoltenEvaluateLine<cr>", desc = "Notebook: evaluate line" },
+      {
+        "<leader>jx",
+        function()
+          require("util.notebook").run_cell()
+        end,
+        desc = "Notebook: run whole cell",
+      },
       { "<leader>jc", "<cmd>MoltenReevaluateCell<cr>", desc = "Notebook: re-evaluate cell" },
       { "<leader>jd", "<cmd>MoltenDelete<cr>", desc = "Notebook: delete cell output" },
       { "<leader>jo", "<cmd>MoltenShowOutput<cr>", desc = "Notebook: show output" },
