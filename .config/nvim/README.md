@@ -144,9 +144,65 @@ clang-format, so the `clang` package is **not** required for either.
 
 `<leader>j` is the notebook group. Open a `.ipynb` and jupytext converts it to
 a markdown buffer on the way in and back to JSON on write, so LSP, treesitter
-and normal motions all work. `<leader>ji` starts a kernel, `<leader>jl`
-evaluates a line, `<leader>jv` evaluates a selection; plots render inline
-through image.nvim's kitty backend.
+and normal motions all work. Plots render inline through image.nvim's kitty
+backend.
+
+| key | does |
+|---|---|
+| `<leader>ji` | start a kernel — **required before anything will run** |
+| `<leader>jx` | run the whole cell under the cursor |
+| `<leader>jl` | run the current line |
+| `<leader>jv` | run the visual selection |
+| `<leader>jc` | re-evaluate a cell molten already knows |
+| `<leader>je` | evaluate an operator/motion |
+| `<leader>jo` / `<leader>jh` | show / hide output |
+| `<leader>jd` | delete a cell's output |
+| `<leader>js` | rendered preview in a side split (toggle) |
+| `<leader>jr` | toggle rendering in this buffer only |
+| `<leader>jp` | preview in the browser (alias of LazyVim's `<leader>cp`) |
+
+`<leader>um` is LazyVim's own *global* render toggle, which flips every open
+markdown buffer; `<leader>jr` is the per-buffer version.
+
+What this is not: a Jupyter notebook UI. There are no cell boxes or run
+buttons, outputs appear as floats and virtual text rather than attached under
+each cell, and there is no variable explorer. `<leader>js` renders the
+*document*. For a real cell-and-output view, `jupyter lab file.ipynb` is the
+honest answer — jupytext writes the `.ipynb` back on save, so the same file
+works in both.
+
+### Editing inside cells
+
+The buffer is `filetype=markdown`, which costs two things that are restored
+explicitly:
+
+- **Indentation.** A notebook from jupytext's `BufReadCmd` comes up with
+  `indentexpr` empty, so Enter after `def main():` left the cursor in column 0.
+  `config/autocmds.lua` sets `shiftwidth=4` plus markdown's treesitter
+  indentexpr for `*.ipynb` buffers only. Both halves are needed — measured,
+  `shiftwidth` alone still gives 0 columns.
+- **Formatting.** The only formatter attached to a notebook was prettier, which
+  treats a fence as opaque text, so cell code was never formatted. conform's
+  `injected` formatter now runs `ruff_format` over each `python` block on save.
+
+Beware when testing indentation that `smartindent` handles `if`/`for`/`while`
+on its own — they are `cinwords` — so a broken setup looks fine until `def`.
+
+### .ipynb files are repaired on open
+
+`util/notebook.lua` runs before jupytext reads a notebook, because jupytext
+reads metadata with one unguarded expression (`utils.lua:16`) and every way it
+can fail is reachable: a missing file, a 0-byte file, or a notebook with no
+kernelspec — which `jupytext --to ipynb` itself writes. The error is raised
+from a `BufReadCmd`, so the buffer never initialises, jupytext never attaches,
+and nothing warns you; writing it then saves raw markdown under a `.ipynb`
+name. `nvim new.ipynb` hit this every time and has destroyed a notebook here.
+
+Repairs are lossless only: empty/missing files get an empty notebook, a
+missing kernelspec is patched in place keeping all cells, and a non-empty file
+that is not JSON is copied to a timestamped `*.recovered-*.md` and reported
+before anything replaces it. Note this means opening a new `.ipynb` creates it
+on disk immediately — jupytext shells out to a binary that needs a real file.
 
 Two prerequisites are NOT installed by lazy.nvim and have to exist for this to
 work at all:
