@@ -1,14 +1,20 @@
--- Wallpaper-driven theming.
+-- Editor colourscheme.
 --
--- Every other surface on this desktop (waybar, kitty, hyprland, dunst, ...) is
--- recoloured from the wallpaper by pywal/wallust. lushwal is the Neovim end of
--- that pipeline: it builds a colorscheme from pywal's ~/.cache/wal output, so
--- the editor matches whatever wallpaper - static or live - is currently up.
--- Losing this is the one thing that would make LazyVim look wrong here, so it
--- is ported deliberately rather than left to LazyVim's tokyonight default.
+-- tokyonight-night is PINNED here, deliberately opting the editor out of the
+-- wallpaper theming that every other surface uses. A palette extracted from an
+-- image has no contrast guarantee: measured on one live wallpaper, 12 of 25
+-- foreground-only highlight groups fell below the 4.5 WCAG floor, including
+-- @variable and @parameter at 3.87. See the reverted commit 3b4404f for the
+-- attempt at enforcing a floor over the top instead.
 --
--- Colours refresh on the next launch, exactly as they did before: pywal writes
--- the cache when the wallpaper changes, and lushwal reads it at startup.
+-- Everything else still follows the wallpaper - waybar, kitty, hyprland
+-- borders, LibreWolf - and transparent.nvim still clears Normal's background,
+-- so the wallpaper shows through behind the code and the desktop still looks
+-- of a piece.
+--
+-- lushwal stays installed and usable: `:colorscheme lushwal` works for the
+-- session. It is just never persisted as the default - see the persist
+-- autocmd at the bottom for why that matters.
 
 -- Remembers the last colorscheme chosen with <leader>uC so it survives a
 -- restart. stdpath("data") is per-NVIM_APPNAME, so this file is LazyVim's own
@@ -208,7 +214,21 @@ return {
         vim.api.nvim_create_autocmd("ColorScheme", {
           group = vim.api.nvim_create_augroup("persist_colorscheme", { clear = true }),
           callback = function(args)
-            if args.match and args.match ~= "" then
+            -- lushwal is never persisted, which is what keeps tokyonight
+            -- actually pinned.
+            --
+            -- The theming pipeline pushes a lushwal reload into every running
+            -- editor on a wallpaper change (reload_nvim_theme.sh). A session
+            -- still on lushwal from before the switch fires ColorScheme, this
+            -- autocmd writes "lushwal" back to the persist file, and the NEXT
+            -- nvim starts on lushwal again - the pin silently undone by a
+            -- wallpaper change in another window. Observed exactly that:
+            -- last-colorscheme.txt had reverted to "lushwal" after a retheme.
+            --
+            -- A deliberate `:colorscheme lushwal` therefore lasts for the
+            -- session but does not become the default. Every other theme still
+            -- persists, so <leader>uC keeps working as before.
+            if args.match and args.match ~= "" and args.match ~= "lushwal" then
               save(args.match)
             end
           end,
