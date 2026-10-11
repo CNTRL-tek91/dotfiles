@@ -141,6 +141,14 @@ return {
       -- flips the current buffer only, leaving rendering off in whatever other
       -- markdown you have open. Use <leader>um to switch everything at once.
       { "<leader>jr", "<cmd>RenderMarkdown buf_toggle<cr>", desc = "Notebook: toggle rendered markdown" },
+      -- Side-by-side: opens a split to the right holding a rendered mirror of
+      -- the buffer, live-synced on TextChanged with the cursor kept in step,
+      -- and turns rendering off in the source so the left pane stays raw text
+      -- you can edit. Calling it again closes the split and restores
+      -- rendering. This is the closest nvim gets to a notebook preview pane -
+      -- it renders the *document*, so prose, headings and fenced code, with
+      -- molten's execution output still drawn in the source window only.
+      { "<leader>js", "<cmd>RenderMarkdown preview<cr>", desc = "Notebook: rendered preview (side split)" },
     },
   },
 
