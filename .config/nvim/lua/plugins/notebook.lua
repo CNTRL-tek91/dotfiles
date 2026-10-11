@@ -85,6 +85,41 @@ return {
     },
   },
 
+  -- Format the python *inside* the cells on save. Until now the only
+  -- formatter attached to a notebook buffer was prettier, which treats a
+  -- ```python fence as opaque text - so cell code was never formatted at all.
+  -- conform's "injected" pseudo-formatter extracts each fenced block and runs
+  -- the formatter for that language over it.
+  --
+  -- ruff_format has to be named explicitly: LazyVim's python extra formats .py
+  -- through the ruff *LSP*, so conform has no python entry of its own to
+  -- inherit here.
+  {
+    "stevearc/conform.nvim",
+    optional = true,
+    opts = function(_, opts)
+      opts.formatters_by_ft = opts.formatters_by_ft or {}
+      -- Appended rather than assigned: LazyVim's markdown extra already puts
+      -- prettier, markdownlint-cli2 and markdown-toc here and a plain
+      -- assignment would quietly drop them.
+      local md = opts.formatters_by_ft.markdown or {}
+      if not vim.tbl_contains(md, "injected") then
+        table.insert(md, "injected")
+      end
+      opts.formatters_by_ft.markdown = md
+
+      opts.formatters = opts.formatters or {}
+      opts.formatters.injected = vim.tbl_deep_extend("force", opts.formatters.injected or {}, {
+        options = {
+          -- A syntax error mid-cell is normal while writing; without this the
+          -- whole save reports a formatter failure.
+          ignore_errors = true,
+          lang_to_formatters = { python = { "ruff_format" } },
+        },
+      })
+    end,
+  },
+
   -- Rendered view. A jupytext buffer is filetype=markdown, so the markdown
   -- extra's plugins already act on it - neither of these needed installing,
   -- only a key. Note this renders the *document*: prose, headings and fenced

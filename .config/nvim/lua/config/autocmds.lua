@@ -50,3 +50,52 @@ vim.api.nvim_create_autocmd("VimLeavePre", {
 -- grep and terminal. Constantly rewriting cwd would silently shrink a
 -- project-wide <leader>/ search down to one directory. LazyVim's root
 -- detection solves the original problem properly, so the workaround is gone.
+
+-- Python indentation inside notebook code cells.
+--
+-- jupytext sets force_ft = "markdown" so a notebook is one markdown buffer -
+-- that is what makes prose cells and rendering work - but Enter after
+-- `def main():` left the cursor in column 0.
+--
+-- Note this is specific to jupytext's buffers, not to markdown. A plain .md
+-- opened as the first buffer of a session already carries
+-- indentexpr=v:lua.LazyVim.treesitter.indentexpr(); a notebook built by
+-- jupytext's BufReadCmd comes up with indentexpr empty, so it loses the
+-- indentation ordinary markdown gets. Restoring it is half the fix.
+--
+-- Measured in a cell, Enter after `def main():`:
+--
+--   notebook as jupytext leaves it (no indentexpr)   0 columns
+--   shiftwidth = 4 alone                             0 columns
+--   shiftwidth = 4 + treesitter indentexpr           4 columns
+--
+-- The expression gives python-aware indent because treesitter injects python
+-- into ```python fences (parser:children() reports markdown_inline and
+-- python), so the indent query runs against a real python tree. shiftwidth is
+-- the other half: markdown's 2 produces 2-column python, which is why prose
+-- notes are deliberately left alone below rather than also set to 4.
+--
+-- Beware a false positive when testing this: `smartindent` indents after
+-- `if`/`for`/`while` on its own because those are 'cinwords', so the setup
+-- looks like it works until you try `def`.
+--
+-- This lives here rather than in the jupytext plugin spec on purpose. That
+-- spec already uses init() for the .ipynb repair guard, and lazy.nvim merges
+-- two fragments of one plugin by overwriting function fields - a second init()
+-- silently replaced the guard and brought the crash straight back.
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = { "markdown" },
+  group = vim.api.nvim_create_augroup("notebook_python_indent", { clear = true }),
+  callback = function(ev)
+    -- Notebooks only. Ordinary markdown notes keep markdown's indentation,
+    -- where a 4-column bump fights list nesting.
+    if not vim.api.nvim_buf_get_name(ev.buf):match("%.ipynb$") then
+      return
+    end
+    -- Applied after the ftplugin: this autocommand is registered later than
+    -- filetype.vim's, and FileType handlers run in registration order.
+    vim.bo[ev.buf].shiftwidth = 4
+    vim.bo[ev.buf].expandtab = true
+    vim.bo[ev.buf].indentexpr = "v:lua.LazyVim.treesitter.indentexpr()"
+  end,
+})
