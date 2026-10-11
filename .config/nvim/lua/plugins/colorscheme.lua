@@ -128,16 +128,37 @@ return {
       colorscheme = function()
         local saved = read_saved()
 
-        -- No saved choice, or lushwal explicitly saved: use the wallpaper
-        -- theme. Anything else was picked deliberately, so honour it and only
-        -- fall back to lushwal if it fails to load.
-        if saved == nil or saved == "lushwal" then
+        -- tokyonight is the default now, NOT lushwal.
+        --
+        -- A wallpaper-derived palette is 16 colours chosen to resemble an
+        -- image, not to be a working syntax theme, and nothing guarantees its
+        -- contrast. Measured on one live wallpaper: 12 of 25 foreground-only
+        -- highlight groups fell below the 4.5 WCAG floor, including @variable
+        -- and @parameter at 3.87 - the most common tokens in a Python file -
+        -- and DiagnosticError at 3.28. Enforcing a floor over the top was
+        -- tried and worked (see the reverted commit), but it is a guard rail
+        -- over colours never designed to be read, and every new wallpaper is
+        -- another roll of the dice.
+        --
+        -- tokyonight is tuned by hand for contrast, so this stops the problem
+        -- recurring instead of catching it each time. The REST of the wallpaper
+        -- theming is untouched: waybar, borders, kitty and LibreWolf still
+        -- recolour, and transparent.nvim still shows the wallpaper through the
+        -- editor background, so the desktop still looks of a piece.
+        --
+        -- lushwal stays installed and reachable - `:colorscheme lushwal` works
+        -- and is remembered - so this is a change of default, not a removal.
+        -- lushwal goes through apply_lushwal() rather than a plain
+        -- :colorscheme, because that call is what registers the LushwalCompile
+        -- reload hook. Without it a deliberately chosen lushwal would load but
+        -- stop following wallpaper changes.
+        if saved == "lushwal" then
           if not apply_lushwal() then
             vim.cmd("colorscheme tokyonight")
           end
-        elseif pcall(vim.cmd, "colorscheme " .. saved) then
-          -- saved theme loaded fine
-        elseif not apply_lushwal() then
+        elseif saved ~= nil and pcall(vim.cmd, "colorscheme " .. saved) then
+          -- A deliberate choice from an earlier session; honour it.
+        else
           vim.cmd("colorscheme tokyonight")
         end
 
