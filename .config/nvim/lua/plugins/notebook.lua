@@ -16,6 +16,21 @@ return {
   {
     "GCBallesteros/jupytext.nvim",
     lazy = false,
+    init = function()
+      -- Runs in init, not config: lazy.nvim executes every init() during
+      -- startup before it loads any plugin, so this BufReadCmd is registered
+      -- ahead of the one jupytext creates in its setup(). Autocommands for an
+      -- event fire in registration order, so the file is repaired before
+      -- jupytext reads it. A separate augroup is used because jupytext clears
+      -- its own with clear = true.
+      vim.api.nvim_create_autocmd("BufReadCmd", {
+        pattern = { "*.ipynb" },
+        group = vim.api.nvim_create_augroup("jupytext-guard", { clear = true }),
+        callback = function(ev)
+          pcall(require("util.notebook").ensure_valid, ev.match)
+        end,
+      })
+    end,
     opts = {
       -- "markdown" keeps cell boundaries as ```python fences, which treesitter
       -- and the LSP both understand. The "py:percent" style writes # %% markers
