@@ -87,6 +87,21 @@ return {
     },
   },
 
+  -- Deliberate alias: LazyVim already binds <leader>cp to this exact command.
+  -- Kept only so the browser preview is discoverable from the notebook group
+  -- alongside the molten keys, instead of under <leader>c with the LSP
+  -- actions. Drop this spec and use <leader>cp if the duplicate grates.
+  --
+  -- ft is set so the key is only live in markdown; mkdp defines its commands
+  -- with -buffer, so a global mapping would fail everywhere else.
+  {
+    "iamcco/markdown-preview.nvim",
+    optional = true,
+    keys = {
+      { "<leader>jp", ft = "markdown", "<cmd>MarkdownPreviewToggle<cr>", desc = "Notebook: browser preview" },
+    },
+  },
+
   {
     "folke/which-key.nvim",
     optional = true,
