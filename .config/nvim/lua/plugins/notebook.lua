@@ -70,6 +70,23 @@ return {
     },
   },
 
+  -- Rendered view. A jupytext buffer is filetype=markdown, so the markdown
+  -- extra's plugins already act on it - neither of these needed installing,
+  -- only a key. Note this renders the *document*: prose, headings and fenced
+  -- code. It is not the Jupyter cell-with-output view; molten draws output
+  -- separately and `jupyter lab <file>.ipynb` remains the real thing.
+  {
+    "MeanderingProgrammer/render-markdown.nvim",
+    optional = true,
+    keys = {
+      -- LazyVim's markdown extra already binds <leader>um to a GLOBAL toggle,
+      -- so this key exists for its scope rather than its function: buf_toggle
+      -- flips the current buffer only, leaving rendering off in whatever other
+      -- markdown you have open. Use <leader>um to switch everything at once.
+      { "<leader>jr", "<cmd>RenderMarkdown buf_toggle<cr>", desc = "Notebook: toggle rendered markdown" },
+    },
+  },
+
   {
     "folke/which-key.nvim",
     optional = true,
