@@ -122,6 +122,19 @@ return {
     end,
   },
 
+  -- "night" rather than LazyVim's default "moon".
+  --
+  -- The style is pinned BOTH ways on purpose. Setting opts alone did not win
+  -- over LazyVim's own { style = "moon" } - colors_name still came back
+  -- tokyonight-moon - so the colorscheme is named explicitly as
+  -- "tokyonight-night" where it is applied. The opts entry stays so that a
+  -- bare `:colorscheme tokyonight` also means night rather than silently
+  -- reverting to moon.
+  {
+    "folke/tokyonight.nvim",
+    opts = { style = "night" },
+  },
+
   {
     "LazyVim/LazyVim",
     opts = {
@@ -154,12 +167,12 @@ return {
         -- stop following wallpaper changes.
         if saved == "lushwal" then
           if not apply_lushwal() then
-            vim.cmd("colorscheme tokyonight")
+            vim.cmd("colorscheme tokyonight-night")
           end
         elseif saved ~= nil and pcall(vim.cmd, "colorscheme " .. saved) then
           -- A deliberate choice from an earlier session; honour it.
         else
-          vim.cmd("colorscheme tokyonight")
+          vim.cmd("colorscheme tokyonight-night")
         end
 
         -- Enforce a readable contrast floor on groups that paint a background.
