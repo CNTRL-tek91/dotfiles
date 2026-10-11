@@ -19,6 +19,11 @@ CACHE = os.path.expanduser("~/.cache/wal")
 SRC = os.path.join(CACHE, "colors.json")
 OUT = os.path.join(CACHE, "colors-kitty-readable.conf")
 
+# Maximum HSL lightness for the terminal background. 0.08 lands near the
+# darkest value this pipeline has produced naturally (#15090b, 4.1%) while
+# staying off pure black, so the wallpaper's hue is still visible in it.
+BG_MAX_LIGHT = 0.08
+
 
 def hex2rgb(h):
     h = h.lstrip("#")
@@ -41,7 +46,20 @@ def main():
     with open(SRC) as f:
         data = json.load(f)
 
-    bg = data["special"]["background"]          # keep the dark background as-is
+    # Cap how LIGHT the background may be.
+    #
+    # pywal derives the background from the wallpaper, so its lightness swings
+    # with whatever image is applied: measured 4.1% HSL lightness on one
+    # wallpaper and 16.3% on another - four times brighter - with no config
+    # change in between. At 16% and kitty's 0.8 opacity, the terminal and the
+    # Neovim window behind it read as a washed-out plum rather than a dark
+    # surface, and every foreground sits on a moving target.
+    #
+    # Clamping the maximum keeps the wallpaper's HUE (the terminal still
+    # recolours) while fixing the base tone, which is the half that has to stay
+    # dark. The minimum is left unbounded: a wallpaper that yields a
+    # near-black background is fine.
+    bg = clamp_light(data["special"]["background"], 0.0, BG_MAX_LIGHT)
     fg = clamp_light(data["special"]["foreground"], 0.72)
     c = data["colors"]
 
